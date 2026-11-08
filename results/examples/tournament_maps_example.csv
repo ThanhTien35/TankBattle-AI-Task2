@@ -1,0 +1,73 @@
+﻿scenario,round,starting_player,p0_algorithm,p1_algorithm,depth,max_plies,result,winner_player,winner_algorithm,plies_played,reason,p0_tank_hp,p1_tank_hp,p0_base_hp,p1_base_hp,p0_decisions,p0_time_ms,p0_nodes,p0_prunes,p0_fires,p0_moves,p0_stays,p1_decisions,p1_time_ms,p1_nodes,p1_prunes,p1_fires,p1_moves,p1_stays
+Classic Battlefield,1,0,Minimax,Alpha-Beta,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,7,8,30,28.793,1266,0,29,1,0,30,15.4,542,147,29,1,0
+Classic Battlefield,1,0,Alpha-Beta,Minimax,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,7,8,30,15.649,538,146,29,1,0,30,29.723,1272,0,29,1,0
+Classic Battlefield,2,1,Minimax,Alpha-Beta,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,8,7,30,28.746,1272,0,29,1,0,30,15.464,538,146,29,1,0
+Classic Battlefield,2,1,Alpha-Beta,Minimax,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,8,7,30,16.038,542,147,29,1,0,30,29.756,1266,0,29,1,0
+Open Arena,1,0,Minimax,Alpha-Beta,2,60,win,0,Minimax,30,Base destroyed,1,1,9,0,15,8.993,645,0,15,0,0,15,4.821,264,69,14,1,0
+Open Arena,1,0,Alpha-Beta,Minimax,2,60,win,0,Alpha-Beta,30,Base destroyed,1,1,9,0,15,4.708,270,75,15,0,0,15,10.042,609,0,14,1,0
+Open Arena,2,1,Minimax,Alpha-Beta,2,60,win,1,Alpha-Beta,30,Base destroyed,1,1,0,9,15,9.53,609,0,14,1,0,15,4.524,270,75,15,0,0
+Open Arena,2,1,Alpha-Beta,Minimax,2,60,win,1,Minimax,30,Base destroyed,1,1,0,9,15,4.824,264,69,14,1,0,15,9.207,645,0,15,0,0
+Tactical Maze,1,0,Minimax,Alpha-Beta,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,8,7,30,23.257,1272,0,29,1,0,30,12.964,538,146,29,1,0
+Tactical Maze,1,0,Alpha-Beta,Minimax,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,8,7,30,12.931,542,147,29,1,0,30,22.926,1266,0,29,1,0
+Tactical Maze,2,1,Minimax,Alpha-Beta,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,7,8,30,22.636,1266,0,29,1,0,30,12.409,542,147,29,1,0
+Tactical Maze,2,1,Alpha-Beta,Minimax,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),1,1,7,8,30,12.436,538,146,29,1,0,30,23.2,1272,0,29,1,0
+Classic Battlefield,1,0,Minimax,Heuristic Minimax,2,60,win,1,Heuristic Minimax,34,Base destroyed,1,1,0,9,17,23.492,731,0,16,1,0,17,64.912,695,0,15,2,0
+Classic Battlefield,1,0,Heuristic Minimax,Minimax,2,60,win,0,Heuristic Minimax,35,Base destroyed,1,1,9,0,18,63.186,738,0,15,3,0,17,19.476,725,0,16,1,0
+Classic Battlefield,2,1,Minimax,Heuristic Minimax,2,60,win,1,Heuristic Minimax,35,Base destroyed,1,1,0,9,17,19.515,725,0,16,1,0,18,61.61,738,0,15,3,0
+Classic Battlefield,2,1,Heuristic Minimax,Minimax,2,60,win,0,Heuristic Minimax,34,Base destroyed,1,1,9,0,17,64.448,695,0,15,2,0,17,23.154,731,0,16,1,0
+Open Arena,1,0,Minimax,Heuristic Minimax,2,60,win,0,Minimax,30,Base destroyed,1,1,9,0,15,8.712,645,0,15,0,0,15,17.436,591,0,9,6,0
+Open Arena,1,0,Heuristic Minimax,Minimax,2,60,win,0,Heuristic Minimax,30,Base destroyed,1,1,9,0,15,18.983,645,0,15,0,0,15,9.375,609,0,14,1,0
+Open Arena,2,1,Minimax,Heuristic Minimax,2,60,win,1,Heuristic Minimax,30,Base destroyed,1,1,0,9,15,9.442,609,0,14,1,0,15,19.654,645,0,15,0,0
+Open Arena,2,1,Heuristic Minimax,Minimax,2,60,win,1,Minimax,30,Base destroyed,1,1,0,9,15,16.929,591,0,9,6,0,15,8.516,645,0,15,0,0
+Tactical Maze,1,0,Minimax,Heuristic Minimax,2,60,win,0,Minimax,30,Base destroyed,2,1,9,0,15,15.49,645,0,15,0,0,15,36.391,609,0,13,2,0
+Tactical Maze,1,0,Heuristic Minimax,Minimax,2,60,win,1,Minimax,31,Base destroyed,1,1,0,9,16,39.806,652,0,14,2,0,15,15.618,645,0,15,0,0
+Tactical Maze,2,1,Minimax,Heuristic Minimax,2,60,win,0,Minimax,31,Base destroyed,1,1,9,0,15,15.671,645,0,15,0,0,16,38.738,652,0,14,2,0
+Tactical Maze,2,1,Heuristic Minimax,Minimax,2,60,win,1,Minimax,30,Base destroyed,1,2,0,9,15,36.35,609,0,13,2,0,15,14.734,645,0,15,0,0
+Classic Battlefield,1,0,Minimax,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,34,Base destroyed,1,1,0,9,17,22.722,731,0,16,1,0,17,28.356,305,78,15,2,0
+Classic Battlefield,1,0,Heuristic Alpha-Beta,Minimax,2,60,win,0,Heuristic Alpha-Beta,35,Base destroyed,1,1,9,0,18,27.063,328,82,15,3,0,17,19.754,725,0,16,1,0
+Classic Battlefield,2,1,Minimax,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,35,Base destroyed,1,1,0,9,17,20.013,725,0,16,1,0,18,27.213,328,82,15,3,0
+Classic Battlefield,2,1,Heuristic Alpha-Beta,Minimax,2,60,win,0,Heuristic Alpha-Beta,34,Base destroyed,1,1,9,0,17,28.509,305,78,15,2,0,17,23.431,731,0,16,1,0
+Open Arena,1,0,Minimax,Heuristic Alpha-Beta,2,60,win,0,Minimax,30,Base destroyed,1,1,9,0,15,8.437,645,0,15,0,0,15,10.648,378,61,9,6,0
+Open Arena,1,0,Heuristic Alpha-Beta,Minimax,2,60,win,0,Heuristic Alpha-Beta,30,Base destroyed,1,1,9,0,15,10.086,302,75,15,0,0,15,9.405,609,0,14,1,0
+Open Arena,2,1,Minimax,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,30,Base destroyed,1,1,0,9,15,9.822,609,0,14,1,0,15,10.087,302,75,15,0,0
+Open Arena,2,1,Heuristic Alpha-Beta,Minimax,2,60,win,1,Minimax,30,Base destroyed,1,1,0,9,15,10.753,370,61,9,6,0,15,8.975,645,0,15,0,0
+Tactical Maze,1,0,Minimax,Heuristic Alpha-Beta,2,60,win,0,Minimax,30,Base destroyed,2,1,9,0,15,15.361,645,0,15,0,0,15,23.807,401,68,13,2,0
+Tactical Maze,1,0,Heuristic Alpha-Beta,Minimax,2,60,win,1,Minimax,31,Base destroyed,1,1,0,9,16,22.63,389,73,14,2,0,15,15.257,645,0,15,0,0
+Tactical Maze,2,1,Minimax,Heuristic Alpha-Beta,2,60,win,0,Minimax,31,Base destroyed,1,1,9,0,15,16.001,645,0,15,0,0,16,24.697,423,73,14,2,0
+Tactical Maze,2,1,Heuristic Alpha-Beta,Minimax,2,60,win,1,Minimax,30,Base destroyed,1,2,0,9,15,21.165,368,68,13,2,0,15,15.195,645,0,15,0,0
+Classic Battlefield,1,0,Alpha-Beta,Heuristic Minimax,2,60,win,1,Heuristic Minimax,34,Base destroyed,1,1,0,9,17,11.564,311,84,16,1,0,17,66.932,695,0,15,2,0
+Classic Battlefield,1,0,Heuristic Minimax,Alpha-Beta,2,60,win,0,Heuristic Minimax,35,Base destroyed,1,1,9,0,18,63.287,738,0,15,3,0,17,10.64,310,83,16,1,0
+Classic Battlefield,2,1,Alpha-Beta,Heuristic Minimax,2,60,win,1,Heuristic Minimax,35,Base destroyed,1,1,0,9,17,10.289,310,83,16,1,0,18,63.883,738,0,15,3,0
+Classic Battlefield,2,1,Heuristic Minimax,Alpha-Beta,2,60,win,0,Heuristic Minimax,34,Base destroyed,1,1,9,0,17,66.603,695,0,15,2,0,17,11.667,311,84,16,1,0
+Open Arena,1,0,Alpha-Beta,Heuristic Minimax,2,60,win,0,Alpha-Beta,30,Base destroyed,1,1,9,0,15,4.477,270,75,15,0,0,15,18.196,591,0,9,6,0
+Open Arena,1,0,Heuristic Minimax,Alpha-Beta,2,60,win,0,Heuristic Minimax,30,Base destroyed,1,1,9,0,15,20.776,645,0,15,0,0,15,5.282,264,69,14,1,0
+Open Arena,2,1,Alpha-Beta,Heuristic Minimax,2,60,win,1,Heuristic Minimax,30,Base destroyed,1,1,0,9,15,4.955,264,69,14,1,0,15,20.35,645,0,15,0,0
+Open Arena,2,1,Heuristic Minimax,Alpha-Beta,2,60,win,1,Alpha-Beta,30,Base destroyed,1,1,0,9,15,16.971,591,0,9,6,0,15,4.203,270,75,15,0,0
+Tactical Maze,1,0,Alpha-Beta,Heuristic Minimax,2,60,win,0,Alpha-Beta,30,Base destroyed,2,1,9,0,15,9.021,270,75,15,0,0,15,36.098,609,0,13,2,0
+Tactical Maze,1,0,Heuristic Minimax,Alpha-Beta,2,60,win,1,Alpha-Beta,31,Base destroyed,1,1,0,9,16,41.12,652,0,14,2,0,15,8.241,270,75,15,0,0
+Tactical Maze,2,1,Alpha-Beta,Heuristic Minimax,2,60,win,0,Alpha-Beta,31,Base destroyed,1,1,9,0,15,8.751,270,75,15,0,0,16,40.711,652,0,14,2,0
+Tactical Maze,2,1,Heuristic Minimax,Alpha-Beta,2,60,win,1,Alpha-Beta,30,Base destroyed,1,2,0,9,15,36.464,609,0,13,2,0,15,8.333,270,75,15,0,0
+Classic Battlefield,1,0,Alpha-Beta,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,34,Base destroyed,1,1,0,9,17,11.394,311,84,16,1,0,17,28.744,305,78,15,2,0
+Classic Battlefield,1,0,Heuristic Alpha-Beta,Alpha-Beta,2,60,win,0,Heuristic Alpha-Beta,35,Base destroyed,1,1,9,0,18,28.063,328,82,15,3,0,17,11.102,310,83,16,1,0
+Classic Battlefield,2,1,Alpha-Beta,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,35,Base destroyed,1,1,0,9,17,10.16,310,83,16,1,0,18,27.485,328,82,15,3,0
+Classic Battlefield,2,1,Heuristic Alpha-Beta,Alpha-Beta,2,60,win,0,Heuristic Alpha-Beta,34,Base destroyed,1,1,9,0,17,30.046,305,78,15,2,0,17,12.663,311,84,16,1,0
+Open Arena,1,0,Alpha-Beta,Heuristic Alpha-Beta,2,60,win,0,Alpha-Beta,30,Base destroyed,1,1,9,0,15,4.575,270,75,15,0,0,15,11.324,378,61,9,6,0
+Open Arena,1,0,Heuristic Alpha-Beta,Alpha-Beta,2,60,win,0,Heuristic Alpha-Beta,30,Base destroyed,1,1,9,0,15,9.736,302,75,15,0,0,15,4.845,264,69,14,1,0
+Open Arena,2,1,Alpha-Beta,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,30,Base destroyed,1,1,0,9,15,4.597,264,69,14,1,0,15,10.345,302,75,15,0,0
+Open Arena,2,1,Heuristic Alpha-Beta,Alpha-Beta,2,60,win,1,Alpha-Beta,30,Base destroyed,1,1,0,9,15,10.776,370,61,9,6,0,15,4.461,270,75,15,0,0
+Tactical Maze,1,0,Alpha-Beta,Heuristic Alpha-Beta,2,60,win,0,Alpha-Beta,30,Base destroyed,2,1,9,0,15,8.346,270,75,15,0,0,15,23.898,401,68,13,2,0
+Tactical Maze,1,0,Heuristic Alpha-Beta,Alpha-Beta,2,60,win,1,Alpha-Beta,31,Base destroyed,1,1,0,9,16,22.877,389,73,14,2,0,15,8.364,270,75,15,0,0
+Tactical Maze,2,1,Alpha-Beta,Heuristic Alpha-Beta,2,60,win,0,Alpha-Beta,31,Base destroyed,1,1,9,0,15,8.111,270,75,15,0,0,16,24.566,423,73,14,2,0
+Tactical Maze,2,1,Heuristic Alpha-Beta,Alpha-Beta,2,60,win,1,Alpha-Beta,30,Base destroyed,1,2,0,9,15,21.697,368,68,13,2,0,15,8.11,270,75,15,0,0
+Classic Battlefield,1,0,Heuristic Minimax,Heuristic Alpha-Beta,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),6,6,9,9,30,55.884,1290,0,1,29,0,30,33.577,685,121,1,29,0
+Classic Battlefield,1,0,Heuristic Alpha-Beta,Heuristic Minimax,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),6,6,9,9,30,39.362,810,96,1,29,0,30,54.297,1290,0,1,29,0
+Classic Battlefield,2,1,Heuristic Minimax,Heuristic Alpha-Beta,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),6,6,9,9,30,54.389,1290,0,1,29,0,30,34.659,685,121,1,29,0
+Classic Battlefield,2,1,Heuristic Alpha-Beta,Heuristic Minimax,2,60,unfinished,,,60,Benchmark cutoff at 60 plies (NOT a draw),6,6,9,9,30,38.395,810,96,1,29,0,30,54.092,1290,0,1,29,0
+Open Arena,1,0,Heuristic Minimax,Heuristic Alpha-Beta,2,60,win,0,Heuristic Minimax,30,Base destroyed,1,1,9,0,15,24.833,645,0,15,0,0,15,11.695,378,61,9,6,0
+Open Arena,1,0,Heuristic Alpha-Beta,Heuristic Minimax,2,60,win,0,Heuristic Alpha-Beta,30,Base destroyed,1,1,9,0,15,8.918,296,75,15,0,0,15,17.36,591,0,9,6,0
+Open Arena,2,1,Heuristic Minimax,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,30,Base destroyed,1,1,0,9,15,16.867,591,0,9,6,0,15,8.661,296,75,15,0,0
+Open Arena,2,1,Heuristic Alpha-Beta,Heuristic Minimax,2,60,win,1,Heuristic Minimax,30,Base destroyed,1,1,0,9,15,10.115,370,61,9,6,0,15,18.35,645,0,15,0,0
+Tactical Maze,1,0,Heuristic Minimax,Heuristic Alpha-Beta,2,60,win,0,Heuristic Minimax,30,Base destroyed,2,1,9,0,15,39.533,645,0,15,0,0,15,22.244,401,68,13,2,0
+Tactical Maze,1,0,Heuristic Alpha-Beta,Heuristic Minimax,2,60,win,0,Heuristic Alpha-Beta,30,Base destroyed,2,1,9,0,15,18.604,289,75,15,0,0,15,35.98,609,0,13,2,0
+Tactical Maze,2,1,Heuristic Minimax,Heuristic Alpha-Beta,2,60,win,1,Heuristic Alpha-Beta,30,Base destroyed,1,2,0,9,15,35.379,609,0,13,2,0,15,18.642,290,75,15,0,0
+Tactical Maze,2,1,Heuristic Alpha-Beta,Heuristic Minimax,2,60,win,1,Heuristic Minimax,30,Base destroyed,1,2,0,9,15,20.727,368,68,13,2,0,15,41.02,645,0,15,0,0
