@@ -9,18 +9,18 @@ from pathlib import Path
 import csv
 from datetime import datetime
 import pygame
-from engine.model import Action, GameState, initial_state, WIDTH, HEIGHT
-from engine.game import apply_action
-from engine.maps import MAP_NAMES, get_map
-from agents.search import SearchAgent, SearchStats
-from agents.registry import ExternalAgent
+from tankbattle.engine.model import Action, GameState, initial_state, WIDTH, HEIGHT
+from tankbattle.engine.game import apply_action
+from tankbattle.engine.maps import MAP_NAMES, get_map, spawn_state
+from tankbattle.agents.search import SearchAgent, SearchStats
+from tankbattle.agents.registry import ExternalAgent
 
 SCREEN_W, SCREEN_H = 1240, 818
 TILE = 40
 BOARD_X, BOARD_Y = 43, 126
 BOARD_W, BOARD_H = WIDTH * TILE, HEIGHT * TILE
 SIDE_X, SIDE_Y, SIDE_W, SIDE_H = 679, 126, 516, 600
-ART = Path(__file__).resolve().parents[1] / 'assets' / 'pixel'
+ART = Path(__file__).resolve().parents[2] / 'assets' / 'pixel'
 
 BG = (9, 13, 21)
 BLACK = (2, 3, 5)
@@ -45,8 +45,9 @@ class UIButton:
 
 class BattleApp:
     def __init__(self, depth=3, p0='Heuristic Alpha-Beta', p1='Heuristic Minimax',
-                 external_module='external_agents.example_agent',
-                 starting_state=None, scenario_name='Opening', gameplay_tactics=True):
+                 external_module='tankbattle.external_agents.example_agent',
+                 starting_state=None, scenario_name='Opening', gameplay_tactics=True,
+                 spawn_mode='balanced', spawn_seed=2026):
         pygame.init()
         pygame.display.set_caption('TANK BATTLE | Battle City Pixel UI | Task 2')
         # Co gian canvas theo kich thuoc cua so
@@ -66,6 +67,8 @@ class BattleApp:
         self.state = self.starting_state
         self.depth = depth
         self.gameplay_tactics = gameplay_tactics
+        self.spawn_mode = spawn_mode
+        self.spawn_seed = spawn_seed
         self.external_modules = (external_module if isinstance(external_module, tuple)
                                  else (external_module, external_module))
         self.modes = [p0, p1]
@@ -161,8 +164,17 @@ class BattleApp:
         current = MAP_NAMES.index(self.map_name) if self.map_name in MAP_NAMES else -1
         self.map_name = MAP_NAMES[(current + 1) % len(MAP_NAMES)]
         self.scenario_name = self.map_name
-        self.starting_state = get_map(self.map_name)
+        self.starting_state = spawn_state(self.map_name, getattr(self, 'spawn_mode', 'balanced'),
+                                          getattr(self, 'spawn_seed', 2026))
         self._reset()
+
+    def _new_random_spawn(self):
+        # G: tao tran moi voi vi tri spawn moi va seed co the tai lap.
+        self.spawn_mode = 'random'
+        self.spawn_seed = getattr(self, 'spawn_seed', 2026) + 1
+        self.starting_state = spawn_state(self.map_name, 'random', self.spawn_seed)
+        self._reset()
+        self.notice = f'RANDOM SPAWN | seed={self.spawn_seed} | G for new spawn'
 
     def _open_replay(self):
         self.paused = True
@@ -170,7 +182,7 @@ class BattleApp:
         self.replay_index = len(self.history) - 1
 
     def _save_log(self):
-        folder = Path(__file__).resolve().parents[1] / 'results' / 'battle_logs'
+        folder = Path(__file__).resolve().parents[2] / 'results' / 'battle_logs'
         folder.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
         target = folder / f'battle_{stamp}.csv'
@@ -299,6 +311,8 @@ class BattleApp:
                     self._reset()
                 elif event.key == pygame.K_m:
                     self._handle_button('map')
+                elif event.key == pygame.K_g:
+                    self._new_random_spawn()
                 elif event.key == pygame.K_l:
                     self._open_replay()
                 elif event.key == pygame.K_LEFTBRACKET and self.replay_mode:
@@ -484,7 +498,7 @@ class BattleApp:
         self._text('MINIMAX  //  ALPHA-BETA  //  HEURISTIC', SIDE_X + 2, 54, 19, ORANGE, True)
         self._draw_board()
         self._draw_sidebar()
-        self._text('SPACE Play/Pause   N Step   R Reset   M Map   L Replay', 44, 758, 16, MUTED)
+        self._text('SPACE Play/Pause   N Step   R Reset   M Map   G Random   L Replay', 44, 758, 16, MUTED)
         self._text('HUMAN: WASD move  |  F fire  |  X stay  |  ESC quit', 44, 784, 15, MUTED)
         self._text(self.notice[:54], SIDE_X + 1, 762, 15, GOLD)
         scaled = pygame.transform.scale(self.screen, self.window.get_size())
@@ -504,8 +518,10 @@ class BattleApp:
 
 
 def run_app(depth=3, p0='Heuristic Alpha-Beta', p1='Heuristic Minimax',
-            external_module='external_agents.example_agent',
-            starting_state=None, scenario_name='Opening', gameplay_tactics=True):
+            external_module='tankbattle.external_agents.example_agent',
+            starting_state=None, scenario_name='Opening', gameplay_tactics=True,
+            spawn_mode='balanced', spawn_seed=2026):
     BattleApp(depth, p0, p1, external_module,
               starting_state=starting_state, scenario_name=scenario_name,
-              gameplay_tactics=gameplay_tactics).run()
+              gameplay_tactics=gameplay_tactics,
+              spawn_mode=spawn_mode, spawn_seed=spawn_seed).run()

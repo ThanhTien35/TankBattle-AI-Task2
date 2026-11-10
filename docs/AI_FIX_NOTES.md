@@ -9,10 +9,10 @@ scored 0 and FIRE was first in the action list.
 
 ## Fix
 
-- `agents/search.py`: inspect first shot impact, distinguish useful hits and
+- `tankbattle/agents/search.py`: inspect first shot impact, distinguish useful hits and
   wall clearing from wasted FIRE; BFS distance to firing lane; incoming bullet
   risk; recent-pose penalty; root tactical ordering and heuristic progress bias.
-- Keep `engine/game.py` unchanged: bullets still advance up to three cells per
+- Keep `tankbattle/engine/game.py` unchanged: bullets still advance up to three cells per
   cycle, collisions are checked cell by cell, and HP rules are unchanged.
 - `--strict-search`: disable gameplay extras when measuring pure search behavior.
 - `tests/test_ai_behavior.py`: prevent the same idle-FIRE regression and check

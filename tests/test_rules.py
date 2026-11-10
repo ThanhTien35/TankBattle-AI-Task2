@@ -1,8 +1,8 @@
 import unittest
 from dataclasses import replace
-from engine.model import Action, Bullet, GameState, Tank, Base, Wall, initial_state
-from engine.game import apply_action, legal_actions
-from agents.search import SearchAgent
+from tankbattle.engine.model import Action, Bullet, GameState, Tank, Base, Wall, initial_state
+from tankbattle.engine.game import apply_action, legal_actions
+from tankbattle.agents.search import SearchAgent
 
 
 class GameRuleTests(unittest.TestCase):
@@ -68,9 +68,9 @@ if __name__ == '__main__':
 
 class IntegrationTests(unittest.TestCase):
     def test_external_agent_contract(self):
-        from agents.registry import ExternalAgent
+        from tankbattle.agents.registry import ExternalAgent
         s = initial_state()
-        a = ExternalAgent('external_agents.example_agent').choose_action(s)
+        a = ExternalAgent('tankbattle.external_agents.example_agent').choose_action(s)
         self.assertIn(a, legal_actions(s))
 
     def test_base_destroyed_ends_match(self):

@@ -8,8 +8,8 @@ import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from agents.search import SearchAgent
-from engine.maps import MAP_NAMES, get_map
+from tankbattle.agents.search import SearchAgent
+from tankbattle.engine.maps import MAP_NAMES, get_map
 
 
 class UILogicTests(unittest.TestCase):
@@ -19,7 +19,7 @@ class UILogicTests(unittest.TestCase):
         fake.Rect = object
         fake.time = types.SimpleNamespace(get_ticks=lambda: 1000)
         module_name = '_tank_ui_test_module'
-        file = Path(__file__).resolve().parents[1] / 'ui' / 'pygame_app.py'
+        file = Path(__file__).resolve().parents[1] / 'tankbattle' / 'ui' / 'pygame_app.py'
         spec = importlib.util.spec_from_file_location(module_name, file)
         module = importlib.util.module_from_spec(spec)
         with patch.dict(sys.modules, {'pygame': fake, module_name: module}):
@@ -33,7 +33,7 @@ class UILogicTests(unittest.TestCase):
         app.state = app.starting_state
         app.map_name = app.scenario_name = 'Open Arena'
         app.depth = 2
-        app.external_modules = ('external_agents.example_agent', 'external_agents.example_agent')
+        app.external_modules = ('tankbattle.external_agents.example_agent', 'tankbattle.external_agents.example_agent')
         app.modes = ['Minimax', 'Alpha-Beta']
         app.agents = [SearchAgent('Minimax', 2), SearchAgent('Alpha-Beta', 2)]
         app.interval = 600
@@ -43,7 +43,7 @@ class UILogicTests(unittest.TestCase):
         self.assertEqual(len(app.history), 3)
         self.assertEqual(len(app.records), 2)
         with tempfile.TemporaryDirectory() as tmp:
-            module.__file__ = str(Path(tmp) / 'ui' / 'pygame_app.py')
+            module.__file__ = str(Path(tmp) / 'tankbattle' / 'ui' / 'pygame_app.py')
             app._save_log()
             exported = list((Path(tmp) / 'results' / 'battle_logs').glob('*.csv'))
             self.assertEqual(len(exported), 1)

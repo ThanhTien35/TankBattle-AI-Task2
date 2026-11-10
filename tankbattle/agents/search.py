@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from functools import lru_cache
 from time import perf_counter
 
-from engine.game import apply_action, legal_actions
-from engine.model import Action, GameState, HEIGHT, WIDTH
+from tankbattle.engine.game import apply_action, legal_actions
+from tankbattle.engine.model import Action, GameState, HEIGHT, WIDTH
 
 MODES = ('Minimax', 'Alpha-Beta', 'Heuristic Minimax', 'Heuristic Alpha-Beta')
 
@@ -169,6 +169,8 @@ def _position_score(state: GameState, player: int) -> float:
             + shot_bonus + 2.0 * mobility - _incoming_threat(state, player))
 
 
+# THUAT TOAN: HAM DANH GIA TRANG THAI (HEURISTIC EVALUATION)
+# Minimax thuong chi cham diem trang thai terminal; heuristic dung HP va vi tri.
 def evaluate(state: GameState, root_player: int, heuristic: bool) -> float:
     if state.winner is not None:
         if state.winner == -1:
@@ -184,6 +186,11 @@ def evaluate(state: GameState, root_player: int, heuristic: bool) -> float:
     return score if root_player == 0 else -score
 
 
+# THUAT TOAN 1: MINIMAX - tim max/min tren cay trang thai.
+# THUAT TOAN 2: ALPHA-BETA - cat nhanh voi hai can alpha, beta.
+# THUAT TOAN 3: HEURISTIC MINIMAX - Minimax va ham danh gia.
+# THUAT TOAN 4: HEURISTIC ALPHA-BETA - ket hop cat nhanh va heuristic.
+# Ca bon dung chung lop; tuy chon use_pruning va use_heuristic.
 class SearchAgent:
     def __init__(self, mode: str = 'Heuristic Alpha-Beta', depth: int = 3,
                  gameplay_tactics: bool = True):
@@ -200,6 +207,7 @@ class SearchAgent:
         self._recent_poses = deque(maxlen=10)
         self._last_ply = -1
 
+    # HO TRO GAMEPLAY: uu tien nuoc di co ich, khong thay doi luat game.
     def _root_rank(self, state: GameState, action: Action, after: GameState) -> float:
         player = state.turn
         before_tank, after_tank = state.tanks[player], after.tanks[player]
@@ -224,6 +232,7 @@ class SearchAgent:
             rank -= 16.0 * self._recent_poses.count(new_pos)
         return rank
 
+    # ROOT SEARCH: chon action tot nhat cho nguoi choi hien tai.
     def choose_action(self, state: GameState) -> Action:
         if state.terminal:
             return Action.STAY
@@ -265,6 +274,7 @@ class SearchAgent:
         self._last_ply = state.ply
         return best_action
 
+    # DE QUY MINIMAX / ALPHA-BETA: MAX la ta, MIN la doi thu.
     def _search(self, state: GameState, depth: int, root: int, alpha: float, beta: float) -> float:
         self.stats.nodes += 1
         if state.terminal or depth == 0:

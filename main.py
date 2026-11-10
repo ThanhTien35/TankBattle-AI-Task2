@@ -1,10 +1,10 @@
 """Launch PyGame or run a text-only match for CI/headless verification."""
 import argparse
-from engine.model import initial_state
-from engine.maps import MAP_NAMES, get_map
-from engine.game import apply_action
-from agents.search import SearchAgent
-from agents.registry import ExternalAgent
+from tankbattle.engine.model import initial_state
+from tankbattle.engine.maps import MAP_NAMES, get_map, spawn_state
+from tankbattle.engine.game import apply_action
+from tankbattle.agents.search import SearchAgent
+from tankbattle.agents.registry import ExternalAgent
 from benchmarks.scenarios import get_scenarios, tournament_scenarios
 
 
@@ -43,18 +43,23 @@ def main():
                         help='Disable gameplay tie-breaks for pure search experiments')
     parser.add_argument('--p0', default='Heuristic Alpha-Beta')
     parser.add_argument('--p1', default='Heuristic Minimax')
-    parser.add_argument('--external-module', default='external_agents.example_agent')
+    parser.add_argument('--external-module', default='tankbattle.external_agents.example_agent')
     parser.add_argument('--external-p0', help='External module for P1')
     parser.add_argument('--external-p1', help='External module for P2')
     parser.add_argument('--headless', action='store_true', help='Run without PyGame')
     parser.add_argument('--max-steps', type=int, default=60)
     parser.add_argument('--map', choices=MAP_NAMES, help='Choose one of the three main maps')
+    parser.add_argument('--spawn', choices=('balanced', 'random'), default='balanced',
+                        help='Balanced opening or fair random spawn')
+    parser.add_argument('--seed', type=int, default=2026,
+                        help='Reproducible random spawn seed')
     parser.add_argument('--scenario', choices=list(available_scenarios()), default='Opening',
                         help='Initial state for GUI or headless demonstration')
     args = parser.parse_args()
     external_modules = (args.external_p0 or args.external_module,
                         args.external_p1 or args.external_module)
-    start_state = get_map(args.map) if args.map else available_scenarios()[args.scenario]
+    start_state = (spawn_state(args.map or 'Classic Battlefield', args.spawn, args.seed)
+                   if args.map or args.scenario == 'Opening' else available_scenarios()[args.scenario])
     selected_name = args.map or args.scenario
     if args.headless:
         headless_match(args.p0, args.p1, args.depth, external_modules,
@@ -62,14 +67,15 @@ def main():
                        gameplay_tactics=not args.strict_search)
     else:
         try:
-            from ui.pygame_app import run_app
+            from tankbattle.ui.pygame_app import run_app
         except ModuleNotFoundError as e:
             if e.name == 'pygame':
                 raise SystemExit('PyGame is missing. Install with: python -m pip install -r requirements.txt') from e
             raise
         run_app(args.depth, args.p0, args.p1, external_modules,
                 starting_state=start_state, scenario_name=selected_name,
-                gameplay_tactics=not args.strict_search)
+                gameplay_tactics=not args.strict_search,
+                spawn_mode=args.spawn, spawn_seed=args.seed)
 
 
 if __name__ == '__main__':

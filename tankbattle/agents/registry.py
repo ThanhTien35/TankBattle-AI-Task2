@@ -1,11 +1,11 @@
 """Load an external agent with `choose_action(state)` from a Python module."""
 from __future__ import annotations
 import importlib
-from engine.model import Action, GameState
-from engine.game import legal_actions
+from tankbattle.engine.model import Action, GameState
+from tankbattle.engine.game import legal_actions
 
 class ExternalAgent:
-    def __init__(self, module_path: str = 'external_agents.example_agent'):
+    def __init__(self, module_path: str = 'tankbattle.external_agents.example_agent'):
         self.module_path = module_path
         module = importlib.import_module(module_path)
         if not callable(getattr(module, 'choose_action', None)):

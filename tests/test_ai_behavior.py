@@ -3,10 +3,10 @@ import random
 import unittest
 from dataclasses import replace
 
-from agents.search import SearchAgent
-from engine.game import apply_action, legal_actions
-from engine.maps import MAP_NAMES, get_map
-from engine.model import Action, Base, GameState, Tank
+from tankbattle.agents.search import SearchAgent
+from tankbattle.engine.game import apply_action, legal_actions
+from tankbattle.engine.maps import MAP_NAMES, get_map
+from tankbattle.engine.model import Action, Base, GameState, Tank
 
 
 class AIBehaviorTests(unittest.TestCase):

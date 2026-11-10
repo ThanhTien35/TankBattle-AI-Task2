@@ -1,8 +1,8 @@
 """Validate an external agent against the same public interface used by the GUI."""
 import argparse
-from agents.registry import ExternalAgent
+from tankbattle.agents.registry import ExternalAgent
 from benchmarks.scenarios import get_scenarios
-from engine.game import legal_actions
+from tankbattle.engine.game import legal_actions
 
 
 def validate(module: str):
@@ -18,6 +18,6 @@ def validate(module: str):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--module', default='external_agents.example_agent')
+    parser.add_argument('--module', default='tankbattle.external_agents.example_agent')
     args = parser.parse_args()
     validate(args.module)

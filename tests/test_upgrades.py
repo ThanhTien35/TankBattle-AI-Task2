@@ -4,14 +4,14 @@ import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
-from agents.registry import ExternalAgent
-from agents.search import SearchAgent, evaluate
+from tankbattle.agents.registry import ExternalAgent
+from tankbattle.agents.search import SearchAgent, evaluate
 from benchmarks.compare import run_benchmark
 from benchmarks.scenarios import get_scenarios
 from benchmarks.tournament import run_tournament
-from engine.game import apply_action, legal_actions
-from engine.maps import MAP_NAMES, get_map
-from engine.model import Action, Base, Bullet, GameState, Tank, Wall, WIDTH, HEIGHT
+from tankbattle.engine.game import apply_action, legal_actions
+from tankbattle.engine.maps import MAP_NAMES, get_map
+from tankbattle.engine.model import Action, Base, Bullet, GameState, Tank, Wall, WIDTH, HEIGHT
 
 
 class MapTests(unittest.TestCase):
@@ -99,7 +99,7 @@ class HistoryTests(unittest.TestCase):
             self.assertTrue(matches.exists() and summary.exists())
 
     def test_external_agent_legal(self):
-        agent = ExternalAgent('external_agents.example_agent')
+        agent = ExternalAgent('tankbattle.external_agents.example_agent')
         for scenario in get_scenarios('maps'):
             self.assertIn(agent.choose_action(scenario.state), legal_actions(scenario.state))
 

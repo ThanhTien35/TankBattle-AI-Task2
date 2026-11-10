@@ -1,6 +1,6 @@
 """Example plug-in API for a different student group. No pygame required."""
-from engine.model import Action, GameState
-from engine.game import legal_actions
+from tankbattle.engine.model import Action, GameState
+from tankbattle.engine.game import legal_actions
 
 
 def choose_action(state: GameState) -> Action:

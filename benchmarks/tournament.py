@@ -11,10 +11,10 @@ from collections import defaultdict
 from dataclasses import replace
 from itertools import combinations
 from pathlib import Path
-from agents.search import MODES, SearchAgent
+from tankbattle.agents.search import MODES, SearchAgent
 from benchmarks.scenarios import Scenario, tournament_scenarios, map_scenarios, get_scenarios
-from engine.game import apply_action
-from engine.model import Action, GameState
+from tankbattle.engine.game import apply_action
+from tankbattle.engine.model import Action, GameState
 
 
 def play_match(start: GameState, modes: tuple[str, str], depth: int,

@@ -2,9 +2,9 @@
 
 ## Requirement 1 - Zero-Sum Game (1.0 point)
 
-- `engine/model.py`: immutable state, players, tank/base/wall/bullet, actions.
-- `engine/game.py`: legal actions, transition, collision, terminal state.
-- `agents/search.py`: terminal utility, heuristic evaluation, Minimax and Alpha-Beta.
+- `tankbattle/engine/model.py`: immutable state, players, tank/base/wall/bullet, actions.
+- `tankbattle/engine/game.py`: legal actions, transition, collision, terminal state.
+- `tankbattle/agents/search.py`: terminal utility, heuristic evaluation, Minimax and Alpha-Beta.
 - **Explain** the alternating-turn convention and game-cycle bullet update as a design decision.
 - **Clarify** depth-limited terminal-only Minimax is not an exhaustive full-game solver.
 
@@ -22,7 +22,7 @@
 
 ## Requirement 3 - GUI and external agents (0.5 point)
 
-- `ui/pygame_app.py`: PyGame UI, two Tank agents, selectable map, STEP/PLAY/RESET, HP, search metrics.
+- `tankbattle/ui/pygame_app.py`: PyGame UI, two Tank agents, selectable map, STEP/PLAY/RESET, HP, search metrics.
 - Battle Log and Replay show stored states without mutating the current match.
 - `external_agents`: import `choose_action(state)`, validate legal Action.
 - `run_windows.bat` / `requirements.txt`: Windows Python 3.14 + pygame-ce.

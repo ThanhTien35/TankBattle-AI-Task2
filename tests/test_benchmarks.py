@@ -2,12 +2,12 @@
 import tempfile
 import unittest
 from pathlib import Path
-from agents.search import MODES, SearchAgent
+from tankbattle.agents.search import MODES, SearchAgent
 from benchmarks.scenarios import get_scenarios, tournament_scenarios
 from benchmarks.compare import run_benchmark
 from benchmarks.tournament import run_tournament
-from engine.model import Action, HEIGHT, WIDTH
-from engine.game import apply_action, legal_actions
+from tankbattle.engine.model import Action, HEIGHT, WIDTH
+from tankbattle.engine.game import apply_action, legal_actions
 
 
 class ScenarioTests(unittest.TestCase):

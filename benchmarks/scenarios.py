@@ -5,8 +5,8 @@ GameState and apply_action() as the interactive game and AI.
 """
 from __future__ import annotations
 from dataclasses import dataclass, replace
-from engine.model import Base, Bullet, GameState, Tank, Wall, initial_state
-from engine.maps import MAP_NAMES, get_map
+from tankbattle.engine.model import Base, Bullet, GameState, Tank, Wall, initial_state
+from tankbattle.engine.maps import MAP_NAMES, get_map
 
 
 @dataclass(frozen=True)
@@ -18,7 +18,7 @@ class Scenario:
 
 
 def classic_scenarios() -> list[Scenario]:
-    start = initial_state()
+    start = get_map('Classic Battlefield')
     open_walls = tuple(w for w in start.walls if (w.x, w.y) != (7, 5))
     close = replace(
         start, walls=open_walls,

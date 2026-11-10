@@ -7,7 +7,7 @@ turn and changes the tank's facing. There is a 160-ply draw safeguard.
 """
 from __future__ import annotations
 from dataclasses import replace
-from engine.model import Action, DIRECTIONS, GameState, Bullet, MAX_TURNS, WIDTH, HEIGHT
+from tankbattle.engine.model import Action, DIRECTIONS, GameState, Bullet, MAX_TURNS, WIDTH, HEIGHT
 
 
 def in_bounds(x: int, y: int) -> bool:

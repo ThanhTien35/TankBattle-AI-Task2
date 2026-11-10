@@ -2,7 +2,7 @@
 from pathlib import Path
 import struct
 import unittest
-from engine.model import WIDTH, HEIGHT, initial_state
+from tankbattle.engine.model import WIDTH, HEIGHT, initial_state
 
 ROOT = Path(__file__).resolve().parents[1] / 'assets' / 'pixel'
 

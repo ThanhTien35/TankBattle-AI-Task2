@@ -7,7 +7,7 @@ import argparse
 import csv
 from pathlib import Path
 from statistics import mean
-from agents.search import MODES, SearchAgent
+from tankbattle.agents.search import MODES, SearchAgent
 from benchmarks.scenarios import get_scenarios
 
 
