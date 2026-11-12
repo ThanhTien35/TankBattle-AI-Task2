@@ -1,312 +1,463 @@
-# TANK BATTLE AI – HƯỚNG DẪN CHẠY PROJECT
+# TANK BATTLE AI – ADVERSARIAL SEARCH
 
-**Môn học:** Nhập môn Trí tuệ nhân tạo (Introduction to Artificial Intelligence)  
-**Nội dung:** Task 2 – Adversarial Search / Tank Battle  
-**Ngôn ngữ:** Python 3.10 trở lên (khuyến nghị Python 3.11 hoặc 3.12)  
-**Giao diện:** PyGame (cài qua gói `pygame-ce`)  
-**Hệ điều hành hướng dẫn:** Windows 10/11, PowerShell trong VS Code
+**Course:** Introduction to Artificial Intelligence  
+**Project:** Task 2 – Tank Battle Game  
+**Language:** Python 3.10+  
+**Interface:** PyGame (`pygame-ce`)
 
-> **Đọc nhanh:** Nếu đã cài Python 3.10 trở lên, mở đúng thư mục project trong VS Code và copy ba lệnh tại **Mục 2**. Những lần sau chỉ cần chạy một lệnh ở **Mục 3**. Không cần kích hoạt `.venv` thủ công.
+Ứng dụng Tank Battle AI sử dụng bốn thuật toán tìm kiếm đối kháng: Minimax, Alpha-Beta Pruning, Heuristic Minimax và Heuristic Alpha-Beta.
 
 ---
 
-## 1. Chuẩn bị
+# 1. INSTALLATION & RUN
 
-1. Giải nén project và mở **thư mục `TankBattle_AI_Task2_Clean`** bằng VS Code (`File > Open Folder`).
-2. Mở `Terminal > New Terminal`. Terminal nên ở thư mục chứa `main.py`, `requirements.txt` và `run_windows.bat`.
-3. Kiểm tra phiên bản Python 3 hiện có trên máy:
+## 1.1. Yêu cầu môi trường
+
+- Python 3.10 trở lên (khuyến nghị Python 3.11 hoặc 3.12)
+- Visual Studio Code hoặc IDE hỗ trợ Python
+- Git (nếu clone từ GitHub)
+
+Mở Terminal tại thư mục gốc chứa `main.py`.
+
+**Kiểm tra phiên bản Python:**
 
 ```powershell
-py -3 --version
+python --version
 ```
 
-Kết quả hợp lệ: `Python 3.10.x` trở lên (ví dụ: 3.11, 3.12, 3.13, 3.14). Nếu phiên bản thấp hơn 3.10, hãy cài Python mới hơn. Dùng `py -0p` để xem các phiên bản đã cài. Nếu máy có nhiều phiên bản, có thể chỉ định `py -3.12` thay cho `py -3`.
+## 1.2. Cài đặt lần đầu
 
-## 2. Chạy lần đầu – COPY NGUYÊN 3 LỆNH
-
-Chạy lần lượt trong PowerShell của VS Code:
+**Windows – PowerShell:**
 
 ```powershell
 py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --only-binary=:all: -r requirements.txt
-.\.venv\Scripts\python.exe main.py
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-**Giải thích ngắn:**
-
-- Lệnh 1: tạo môi trường Python riêng `.venv` cho project.
-- Lệnh 2: cài `pygame-ce` từ bản dựng sẵn, giúp hạn chế lỗi biên dịch thư viện.
-- Lệnh 3: mở giao diện Tank Battle AI.
-
-Nếu cửa sổ game mở lên, quá trình cài đặt đã hoàn tất. **Không cần cài lại thư viện ở mỗi lần chạy.**
-
-### Cách tự động (không cần gõ ba lệnh)
-
-Tại thư mục project, chạy:
+**Kích hoạt môi trường ảo:**
 
 ```powershell
-.\run_windows.bat
+.\.venv\Scripts\Activate.ps1
 ```
 
-File này sẽ kiểm tra/tạo `.venv`, cài thư viện nếu thiếu và mở game.
+**macOS / Linux:**
 
-## 3. Chạy ở những lần sau
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
 
-Mở VS Code tại đúng thư mục project và chạy:
+Sau khi kích hoạt thành công, Terminal thường xuất hiện `(.venv)`.
+
+## 1.3. Chạy ứng dụng
 
 ```powershell
-.\.venv\Scripts\python.exe main.py
+python main.py
 ```
 
-Hoặc:
+Khởi động giao diện Tank Battle với cấu hình mặc định.
+
+**Chạy trên bản đồ cụ thể:**
 
 ```powershell
-.\run_windows.bat
+python main.py --map "Classic Battlefield"
 ```
-
-### Chọn bản đồ và thuật toán ngay khi khởi động
-
-**Classic Battlefield – Minimax đấu Alpha-Beta, Depth 3:**
 
 ```powershell
-.\.venv\Scripts\python.exe main.py --map "Classic Battlefield" --depth 3 --p0 Minimax --p1 Alpha-Beta
+python main.py --map "Open Arena"
 ```
-
-**Open Arena – Heuristic Minimax đấu Heuristic Alpha-Beta:**
 
 ```powershell
-.\.venv\Scripts\python.exe main.py --map "Open Arena" --depth 3 --p0 "Heuristic Minimax" --p1 "Heuristic Alpha-Beta"
+python main.py --map "Tactical Maze"
 ```
 
-**Tactical Maze – hai thuật toán có Heuristic:**
+**Chọn thuật toán và Search Depth:**
 
 ```powershell
-.\.venv\Scripts\python.exe main.py --map "Tactical Maze" --depth 3 --p0 "Heuristic Alpha-Beta" --p1 "Heuristic Minimax"
+python main.py --depth 3 --p0 Minimax --p1 Alpha-Beta
 ```
 
-Các tên bản đồ hợp lệ: `Classic Battlefield`, `Open Arena`, `Tactical Maze`. Tên thuật toán có khoảng trắng phải đặt trong dấu nháy kép.
-
-## 3.1. Spawn – Vị trí xuất hiện
-
-**Giữ nguyên luật đề bài:** Tank = 6 HP, Base = 9 HP, Wall = 3 HP. Hai Tank được bố trí lệch hàng, tránh đối đầu trực diện ngay khi bắt đầu.
-
-Spawn cân bằng (mặc định):
+**Chạy hai thuật toán Heuristic:**
 
 ```powershell
-.\.venv\Scripts\python.exe main.py --map "Classic Battlefield" --spawn balanced
+python main.py --depth 3 --p0 "Heuristic Minimax" --p1 "Heuristic Alpha-Beta"
 ```
 
-Spawn ngẫu nhiên có kiểm soát (`seed` giúp tái lập kết quả):
+**Random Spawn với seed cố định:**
 
 ```powershell
-.\.venv\Scripts\python.exe main.py --map "Classic Battlefield" --spawn random --seed 2026
+python main.py --spawn random --seed 2026
 ```
 
-Trong game, nhấn **G** để tạo trận mới ở vị trí ngẫu nhiên (seed tăng 1).
-Nhấn **R** để chơi lại đúng vị trí của trận hiện tại.
+Seed giúp tái hiện cùng vị trí xuất phát để phục vụ kiểm thử.
 
-**Vị trí thuật toán:** `tankbattle/agents/search.py`. Tìm các chú thích `THUAT TOAN 1`, `THUAT TOAN 2`, `THUAT TOAN 3`, `THUAT TOAN 4` để theo dõi. Có giải thích trong `docs/THUAT_TOAN.md`.
+---
 
-## 4. Phím điều khiển trong game
+# 2. BENCHMARK & EXPERIMENTS
 
-| Phím / Nút | Chức năng |
-|---|---|
-| `SPACE` / `PLAY / PAUSE` | Chạy hoặc tạm dừng trận đấu |
-| `N` / `STEP` | Thực hiện **một lượt hành động** rồi dừng; không phải một node của Minimax |
-| `R` / `RESET` | Chơi lại từ trạng thái khởi đầu |
-| `M` / `MAP` | Chuyển qua ba bản đồ (reset trận) |
-| Chọn `P1` / `P2` | Đổi thuật toán hoặc chọn `Human` / `External` |
-| `L` / `BATTLE LOG / REPLAY` | Mở lịch sử trận đấu |
-| `PREVIOUS` / `NEXT` | Xem trạng thái trước/sau trong Replay |
-| `EXPORT LOG CSV` | Xuất lịch sử trận vào `results/battle_logs/` |
-| `BACK` | Quay lại trận đấu đang tạm dừng |
-| `+` / `-` | Tăng / giảm tốc độ chuyển lượt |
-| `W`, `A`, `S`, `D` | Di chuyển khi chọn `Human` |
-| `F` hoặc `ENTER` | Bắn khi chọn `Human` |
-| `X` | Đứng yên (`STAY`) khi chọn `Human` |
-| `ESC` | Thoát game |
+Các lệnh dưới đây sử dụng file `benchmark.py` ở thư mục gốc.
 
-**Bốn thuật toán:** `Minimax`, `Alpha-Beta`, `Heuristic Minimax`, `Heuristic Alpha-Beta`. Chế độ `Human` do người chơi điều khiển; `External` gọi agent từ module Python bên ngoài.
-
-## 5. BENCHMARK – So sánh hiệu suất 4 thuật toán
-
-Benchmark đo **một quyết định tìm kiếm tại cùng trạng thái**, không phải một trận đấu hoàn chỉnh. Mỗi lệnh sẽ tự tạo thư mục `results/` nếu cần và lưu file CSV.
-
-### 5.1. Benchmark nhanh – Depth 3
+## 2.1. Quick Benchmark
 
 ```powershell
-.\.venv\Scripts\python.exe -m benchmarks.compare --suite maps --depth 3 --repeats 5 --output results/benchmark_depth3.csv
+python benchmark.py
 ```
 
-### 5.2. Benchmark chính – Depth 2, 3, 4 trên cả 3 map
+So sánh bốn thuật toán trên ba bản đồ, sử dụng Depth 3 và số lần lặp mặc định.
+
+Kết quả lưu tại:
+
+`results/benchmark.csv`
+
+## 2.2. Full Benchmark
 
 ```powershell
-.\.venv\Scripts\python.exe -m benchmarks.compare --suite maps --depths 2 3 4 --repeats 5 --output results/maps_depths234.csv
+python benchmark.py --all
 ```
 
-- `--suite maps`: ba bản đồ chính.
-- `--depths 2 3 4`: chạy lần lượt ba độ sâu.
-- `--repeats 5`: đo năm lần cho mỗi cấu hình để lấy thời gian trung bình.
-- `--output`: nơi lưu CSV.
+So sánh bốn thuật toán với Depth 2, 3 và 4.
 
-### 5.3. Benchmark tình huống chiến thuật
+Kết quả lưu tại:
+
+`results/benchmark_all.csv`
+
+## 2.3. Tactical Benchmark
 
 ```powershell
-.\.venv\Scripts\python.exe -m benchmarks.compare --suite tactical --depth 3 --repeats 5 --output results/tactical_depth3.csv
+python benchmark.py --tactical
 ```
 
-Các tình huống gồm: `Incoming bullet`, `Forced flank`, `Finishing shot`, `Brick barrier`.
+Kiểm tra khả năng lựa chọn hành động trong các tình huống chiến thuật:
 
-### 5.4. Benchmark nguyên bản (Strict Search)
+- Incoming Bullet – Né đạn
+- Forced Flank – Di chuyển tìm góc tấn công
+- Finishing Shot – Kết liễu đối thủ
+- Brick Barrier – Xử lý vật cản
+
+Kết quả lưu tại:
+
+`results/benchmark_tactical.csv`
+
+## 2.4. AI Tournament
 
 ```powershell
-.\.venv\Scripts\python.exe -m benchmarks.compare --suite maps --depths 2 3 4 --repeats 5 --strict-search --output results/strict_maps_depths234.csv
+python benchmark.py --tournament
 ```
 
-`--strict-search` tắt các cơ chế hỗ trợ chọn hành động ở tầng gốc (tactical tie-break / root bonus). Đây là lựa chọn phù hợp khi cần đối chiếu thuật toán tìm kiếm cơ bản. **Không trộn số liệu Strict Search với chế độ gameplay mặc định khi viết báo cáo.**
+Cho bốn thuật toán thi đấu trên ba bản đồ và đổi vị trí P1/P2.
 
-### 5.5. Đọc kết quả Benchmark
+Kết quả:
 
-| Cột CSV | Ý nghĩa |
-|---|---|
-| `scenario` | Tên bản đồ hoặc tình huống |
-| `algorithm` | Thuật toán |
-| `depth` | Độ sâu tìm kiếm |
-| `avg_time_ms` | Thời gian tìm kiếm trung bình (ms) |
-| `avg_nodes` | Số node duyệt trung bình |
-| `avg_leaves` | Số node lá được đánh giá trung bình |
-| `avg_prunes` | Số lần cắt nhánh trung bình |
-| `chosen_action` | Hành động AI chọn |
-| `root_score` | Giá trị tìm kiếm tại gốc |
+- `results/tournament.csv` – Thống kê từng trận đấu.
+- `results/tournament_summary.csv` – Tổng hợp kết quả các thuật toán.
 
-`Alpha-Beta` thường duyệt ít node hơn `Minimax` ở cùng điều kiện, nhưng thời gian thực tế còn phụ thuộc máy và thứ tự xét hành động.
+## 2.5. Custom Benchmark
 
-## 6. TOURNAMENT – Cho 4 thuật toán đấu với nhau
-
-Chạy giải đấu trên ba map, đổi vị trí P1/P2 và người đi trước để giảm thiên lệch:
+**Thay đổi Search Depth:**
 
 ```powershell
-.\.venv\Scripts\python.exe -m benchmarks.tournament --suite maps --depth 2 --rounds 2 --max-plies 60 --output results/tournament.csv --summary-output results/tournament_summary.csv
+python benchmark.py --depth 4
 ```
 
-Hai file kết quả:
-
-- `results/tournament.csv`: từng trận, người thắng, số lượt, HP còn lại và thống kê tìm kiếm.
-- `results/tournament_summary.csv`: tổng số trận, thắng/thua/hòa, chưa kết thúc, win rate và số node trung bình.
-
-**Chú ý:** `unfinished` là trận bị dừng vì chạm `--max-plies`; **không được tự tính là hòa**. Win rate trong file tổng hợp chỉ tính các trận đã kết thúc. Có thể tăng `--max-plies` để theo dõi lâu hơn, nhưng thời gian chạy sẽ tăng.
-
-### Tournament nguyên bản
+**Thay đổi số lần lặp:**
 
 ```powershell
-.\.venv\Scripts\python.exe -m benchmarks.tournament --suite maps --depth 2 --rounds 2 --max-plies 60 --strict-search --output results/tournament_strict.csv --summary-output results/tournament_strict_summary.csv
+python benchmark.py --repeats 10
 ```
 
-## 7. UNIT TESTS – Kiểm tra logic chương trình
+**Strict Search:**
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+python benchmark.py --all --strict-search
 ```
 
-Nếu cuối Terminal hiển thị `OK` thì các bài kiểm thử đã đạt. Bài kiểm thử tự động **không thay thế** việc kiểm tra cửa sổ PyGame và các nút trên máy thực tế.
+Strict Search được sử dụng để kiểm tra thuật toán tìm kiếm mà không áp dụng các cơ chế hỗ trợ lựa chọn hành động ở node gốc.
 
-## 8. CHẠY TẤT CẢ THỰC NGHIỆM CHỈ VỚI MỘT LỆNH
+Nên tách riêng kết quả Strict Search và Gameplay Mode khi đánh giá.
 
-**Sau khi đã cài môi trường ở Mục 2**, chạy:
+## 2.6. Unit Tests
 
 ```powershell
-.\run_experiments.bat
+python benchmark.py --test
 ```
 
-Script sẽ chạy theo thứ tự: **Unit Tests → Benchmark 3 map / Depth 2–3–4 → Benchmark chiến thuật → Tournament**. Kết quả được lưu trong `results/`. Không cần mở PyGame để chạy thực nghiệm.
+Chạy toàn bộ Unit Tests để kiểm tra Game Engine, luật chơi, thuật toán và các thành phần liên quan.
 
-## 9. EXTERNAL AGENT – Tích hợp thuật toán bên ngoài
-
-Có sẵn module mẫu `tankbattle.external_agents.example_agent`. Để kiểm tra module mẫu:
-
-```powershell
-.\.venv\Scripts\python.exe -m tankbattle.external_agents.validate --module tankbattle.external_agents.example_agent
-```
-
-Chạy External Agent (P1) đấu Heuristic Alpha-Beta (P2):
-
-```powershell
-.\.venv\Scripts\python.exe main.py --map "Open Arena" --p0 External --p1 "Heuristic Alpha-Beta" --external-module tankbattle.external_agents.example_agent
-```
-
-Khi có module riêng, thay `tankbattle.external_agents.example_agent` bằng tên module thực tế. Chỉ chạy code agent từ nguồn tin cậy.
-
-## 10. CHẠY KHÔNG CẦN GIAO DIỆN (HEADLESS)
-
-Dùng để xem diễn biến từng lượt trực tiếp trong Terminal:
-
-```powershell
-.\.venv\Scripts\python.exe main.py --headless --map "Open Arena" --depth 2 --p0 Minimax --p1 Alpha-Beta --max-steps 60
-```
-
-## 11. CẤU TRÚC THƯ MỤC CHÍNH
+Kết quả thành công:
 
 ```text
-TankBattle_AI_Task2_Clean/
-├── main.py                    # Chay game va tham so CLI
-├── requirements.txt           # pygame-ce
-├── run_windows.bat            # Cai dat neu can va mo game
-├── run_experiments.bat        # Chay test, benchmark, tournament
-├── tankbattle/                # Toan bo ma nguon game
-│   ├── engine/               # Game State, map, va cham, dan, HP
-│   ├── agents/               # Minimax, Alpha-Beta, Heuristic
-│   ├── external_agents/      # Module agent ngoai va kiem tra
-│   └── ui/                   # Giao dien PyGame va replay
-├── assets/pixel/              # Hinh anh pixel art
-├── benchmarks/                # Benchmark va Tournament
-├── tests/                     # Unit tests
-├── docs/                      # Ghi chu va checklist Task 2
-└── results/                   # File CSV sau khi chay
+Ran 40 tests
+
+OK
 ```
 
-## 12. LỖI THƯỜNG GẶP VÀ CÁCH XỬ LÝ
-
-**Lỗi 1: `The term '.\.venv\Scripts\python.exe' is not recognized`**  
-Bạn đang ở sai thư mục hoặc chưa tạo `.venv`. Mở lại thư mục chứa `main.py`, sau đó chạy:
-
-```powershell
-py -3 -m venv .venv
-```
-
-**Lỗi 2: `No module named 'pygame'`**  
-Cài lại đúng gói `pygame-ce` theo `requirements.txt`:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install --only-binary=:all: -r requirements.txt
-```
-
-Không cài đồng thời `pygame` cũ và `pygame-ce` trong cùng một môi trường.
-
-**Lỗi 3: `py -3` không tìm thấy Python hoặc Python quá cũ**  
-Kiểm tra:
-
-```powershell
-py -0p
-```
-
-Project yêu cầu Python 3.10 trở lên. Nếu `py` không hoạt động, hãy kiểm tra Python Launcher hoặc thử `python --version` và `python -m venv .venv`. Nếu đã tạo `.venv` bằng Python phiên bản cũ, xóa thư mục `.venv` rồi tạo lại bằng phiên bản phù hợp.
-
-**Lỗi 4: `can't open file 'main.py'` / `No module named benchmarks`**  
-Terminal đang ở sai thư mục. Hãy `cd` vào **thư mục gốc của project** trước khi chạy lệnh.
-
-**Lỗi 5: Game chạy nhưng AI cứ bắn liên tục**  
-Kiểm tra bạn có vô tình bật `--strict-search` không. Chế độ Strict Search có thể tạo hành động đồng điểm và ưu tiên `FIRE`. Để xem AI chơi với cơ chế chống lặp, chạy `main.py` **không kèm** `--strict-search`.
-
-**Lỗi 6: Benchmark lâu**  
-Thử `--depth 2 --repeats 3` trước. Depth 4 trở lên có thể chậm hơn đáng kể do số node tăng nhanh.
+Số lượng bài kiểm thử có thể thay đổi khi cập nhật project.
 
 ---
 
-## 13. GHI CHÚ CHO BÁO CÁO
+# 3. GAME CONTROLS
 
-- Các thuật toán trong project đều có **giới hạn độ sâu**; Minimax và Alpha-Beta ở chế độ strict là baseline đánh giá trạng thái kết thúc, **không phải tìm kiếm toàn bộ cây game**.
-- Chế độ gameplay mặc định có thêm cơ chế chọn hành động chiến thuật ở tầng gốc để giảm hiện tượng bắn/đứng yên vô ích. Cần ghi rõ khi trình bày thực nghiệm.
-- Kết quả thời gian phải đo trên **máy thực tế dùng để báo cáo**; không lấy số liệu ví dụ trong `results/examples/` làm kết quả thực nghiệm của nhóm.
-- Nếu nộp bài trong học phần có quy định riêng về công cụ được phép sử dụng, cần tuân thủ quy định đó.
+| Phím / Chức năng | Mô tả |
+|---|---|
+| SPACE | Play / Pause |
+| N | Step – Chạy một lượt |
+| R | Reset trận hiện tại |
+| G | Tạo trận mới với Random Spawn |
+| M | Chuyển bản đồ |
+| L | Mở Battle Log / Replay |
+| + / - | Tăng / giảm tốc độ |
+| ESC | Thoát ứng dụng |
 
-**Thứ tự đề xuất:** Chạy app → kiểm tra 3 map → chạy Unit Tests → Benchmark Depth 2–3–4 → Tactical Benchmark → Tournament → lưu CSV và ảnh minh chứng.
+**Human Mode:**
+
+| Phím | Action |
+|---|---|
+| W / ↑ | MOVE_UP |
+| S / ↓ | MOVE_DOWN |
+| A / ← | MOVE_LEFT |
+| D / → | MOVE_RIGHT |
+| F / ENTER | FIRE |
+| X | STAY |
+
+---
+
+# 4. EXTERNAL AGENT
+
+External Mode cho phép sử dụng thuật toán AI từ module Python bên ngoài.
+
+**Kiểm tra Agent mẫu:**
+
+```powershell
+python -m tankbattle.external_agents.validate --module tankbattle.external_agents.example_agent
+```
+
+**Chạy External Agent vs Heuristic Alpha-Beta:**
+
+```powershell
+python main.py --p0 External --p1 "Heuristic Alpha-Beta" --external-module tankbattle.external_agents.example_agent
+```
+
+Module mẫu được lưu tại:
+
+`tankbattle/external_agents/example_agent.py`
+
+External Agent không phải thuật toán tìm kiếm thứ năm mà là chức năng mở rộng để tích hợp AI bên ngoài.
+
+---
+
+# 5. PROJECT STRUCTURE
+
+```text
+TankBattle_AI_Task2/
+│
+├── main.py
+├── benchmark.py
+├── README.md
+├── requirements.txt
+├── run_windows.bat
+├── run_experiments.bat
+│
+├── tankbattle/
+│   ├── agents/
+│   │   ├── search.py
+│   │   └── registry.py
+│   │
+│   ├── engine/
+│   │   ├── game.py
+│   │   ├── model.py
+│   │   └── maps.py
+│   │
+│   ├── external_agents/
+│   └── ui/
+│
+├── assets/
+├── benchmarks/
+├── tests/
+├── docs/
+└── results/
+```
+
+**Các thành phần chính:**
+
+- `main.py`: Điểm khởi chạy ứng dụng.
+- `benchmark.py`: Điểm khởi chạy thực nghiệm.
+- `tankbattle/agents/`: Các thuật toán tìm kiếm AI.
+- `tankbattle/engine/`: Game State, luật chơi, xử lý hành động và bản đồ.
+- `tankbattle/ui/`: Giao diện PyGame, Battle Log và Replay.
+- `benchmarks/`: Các module so sánh thuật toán và Tournament.
+- `tests/`: Các bài kiểm thử tự động.
+- `results/`: Kết quả thực nghiệm dạng CSV.
+
+---
+
+# 6. GAME RULES
+
+Tank Battle là trò chơi đối kháng hai người chơi với tổng lợi ích bằng không (Zero-Sum Game).
+
+Mỗi Tank có thể thực hiện sáu hành động:
+
+```text
+MOVE_UP
+MOVE_DOWN
+MOVE_LEFT
+MOVE_RIGHT
+FIRE
+STAY
+```
+
+**Thông số theo đề bài:**
+
+| Đối tượng | HP |
+|---|---:|
+| Tank | 6 |
+| Base | 9 |
+| Wall (Brick) | 3 |
+
+Các quy tắc chính:
+
+- Mỗi Tank di chuyển tối đa một ô trong lượt.
+- Đạn di chuyển tối đa ba ô trong mỗi game cycle.
+- Va chạm của đạn được kiểm tra sau từng ô di chuyển.
+- Một phát đạn gây một đơn vị sát thương khi trúng mục tiêu.
+- Trận đấu kết thúc khi Tank hoặc Base của một bên bị phá hủy.
+- Hai Tank thực hiện hành động theo cơ chế luân phiên P1 → P2.
+
+Hệ thống cung cấp ba bản đồ: Classic Battlefield, Open Arena và Tactical Maze.
+
+### Spawn System
+
+Project hỗ trợ:
+
+- **Balanced Spawn:** Hai Tank xuất hiện tại các vị trí tương đối cân bằng, cách xa nhau và tránh đường bắn trực diện từ đầu.
+- **Random Spawn:** Vị trí xuất phát ngẫu nhiên có kiểm soát.
+- **Seed:** Cho phép tái hiện vị trí xuất phát khi chạy thực nghiệm.
+
+Việc bố trí Spawn giúp giảm lợi thế tấn công trực tiếp của người đi trước và tạo điều kiện để AI di chuyển tìm vị trí chiến đấu.
+
+---
+
+# 7. SEARCH ALGORITHMS
+
+Project triển khai bốn cấu hình tìm kiếm đối kháng.
+
+| Algorithm | Evaluation | Pruning |
+|---|---|---|
+| Minimax | Terminal-based | No |
+| Alpha-Beta | Terminal-based | Yes |
+| Heuristic Minimax | Heuristic Evaluation | No |
+| Heuristic Alpha-Beta | Heuristic Evaluation | Yes |
+
+### 7.1. Minimax
+
+Minimax tìm kiếm các trạng thái trò chơi theo lượt, giả định hai người chơi đều đưa ra quyết định tối ưu.
+
+Thuật toán lựa chọn hành động nhằm tối đa hóa giá trị của người chơi hiện tại, đồng thời xét đến phản ứng đối kháng của đối phương.
+
+### 7.2. Alpha-Beta Pruning
+
+Alpha-Beta cải tiến Minimax bằng cách loại bỏ những nhánh không thể ảnh hưởng đến quyết định tối ưu.
+
+Mục tiêu là giảm số node phải duyệt mà vẫn giữ kết quả đánh giá tương đương Minimax khi sử dụng cùng hàm đánh giá và độ sâu.
+
+### 7.3. Heuristic Minimax
+
+Heuristic Minimax sử dụng Evaluation Function để ước lượng chất lượng của trạng thái khi chưa đạt Terminal State.
+
+Các yếu tố đánh giá bao gồm:
+
+- HP của Tank và Base.
+- Khoảng cách và khả năng tiếp cận mục tiêu.
+- Vị trí và đường bắn.
+- Mức độ nguy hiểm từ đạn đối phương.
+- Lợi thế tấn công và phòng thủ.
+
+### 7.4. Heuristic Alpha-Beta
+
+Kết hợp Evaluation Function với Alpha-Beta Pruning.
+
+Thuật toán hướng đến việc giảm chi phí tìm kiếm trong khi vẫn đánh giá các trạng thái chiến thuật.
+
+### 7.5. Search Depth
+
+Search Depth quyết định độ sâu tối đa của cây tìm kiếm.
+
+| Depth | Mục đích |
+|---|---|
+| 2 | Thực nghiệm nhanh |
+| 3 | Cân bằng giữa thời gian và khả năng tìm kiếm |
+| 4 | Đánh giá mức tăng chi phí tìm kiếm |
+
+Các thuật toán sử dụng giới hạn độ sâu, không duyệt toàn bộ cây trạng thái đến khi trò chơi kết thúc.
+
+---
+
+# 8. EXPERIMENT RESULTS
+
+Các kết quả dưới đây được ghi nhận từ lần thực nghiệm trên Windows với Python 3.14.3. Số liệu có thể thay đổi tùy môi trường và cấu hình.
+
+## 8.1. Unit Tests
+
+| Test Suite | Kết quả |
+|---|---|
+| AI Behavior | Passed |
+| Benchmark & Scenarios | Passed |
+| Game Rules | Passed |
+| Spawn System | Passed |
+| UI Assets & Logic | Passed |
+| Integration & History | Passed |
+| **Tổng cộng** | **40/40 Passed** |
+
+## 8.2. Benchmark – Depth 4
+
+Kết quả trên bản đồ Classic Battlefield:
+
+| Algorithm | Time (ms) | Nodes | Prunes |
+|---|---:|---:|---:|
+| Minimax | 20.260 | 1,555 | 0 |
+| Alpha-Beta | 2.688 | 130 | 45 |
+| Heuristic Minimax | 138.899 | 1,555 | 0 |
+| Heuristic Alpha-Beta | 47.187 | 579 | 72 |
+
+**Nhận xét:**
+
+- Alpha-Beta giảm khoảng 91,6% số node so với Minimax.
+- Heuristic Alpha-Beta giảm khoảng 62,8% số node so với Heuristic Minimax.
+- Hàm Heuristic có thêm chi phí tính toán nên thời gian thực thi không chỉ phụ thuộc số node.
+- Khả năng cắt tỉa phụ thuộc trạng thái và thứ tự xét hành động.
+
+## 8.3. AI Tournament
+
+Tournament được chạy trên ba bản đồ với Depth 2, hai vòng thử nghiệm và giới hạn 80 plies.
+
+**Tổng cộng: 72 trận, tất cả đều kết thúc.**
+
+| Algorithm | Wins | Losses | Draws | Win Rate |
+|---|---:|---:|---:|---:|
+| Minimax | 14 | 22 | 0 | 38.89% |
+| Alpha-Beta | 14 | 22 | 0 | 38.89% |
+| Heuristic Minimax | 22 | 14 | 0 | 61.11% |
+| Heuristic Alpha-Beta | 22 | 14 | 0 | 61.11% |
+
+**Nhận xét:**
+
+- Hai thuật toán Heuristic đạt tỷ lệ thắng 61,11% trong cấu hình thử nghiệm.
+- Minimax và Alpha-Beta đạt cùng tỷ lệ thắng, phù hợp với việc chúng sử dụng cùng Evaluation Function trong chế độ so sánh tương ứng.
+- Heuristic Minimax và Heuristic Alpha-Beta cũng đạt cùng tỷ lệ thắng; Alpha-Beta chủ yếu tạo lợi thế về hiệu quả tìm kiếm.
+- Kết quả Tournament phụ thuộc vào bản đồ, Spawn, Depth và cấu hình đối thủ.
+
+Các file CSV được lưu trong `results/` để phục vụ phân tích và báo cáo.
+
+---
+
+# 9. NOTES
+
+- Kích hoạt `.venv` trước khi sử dụng các lệnh `python`.
+- Sử dụng `python benchmark.py --test` để kiểm tra sau khi chỉnh sửa source code.
+- Sử dụng `python benchmark.py --all` để đánh giá ảnh hưởng của Search Depth.
+- Sử dụng `python benchmark.py --tournament` để đo kết quả thi đấu giữa các thuật toán.
+- Để thực nghiệm công bằng, cần giữ cùng bản đồ, trạng thái xuất phát, Search Depth và môi trường phần cứng.
+- Các số liệu đo được phản ánh cấu hình thực nghiệm, không chứng minh thuật toán luôn thắng hoặc luôn tối ưu trong mọi trạng thái.
+- Cần tuân thủ quy định học phần về việc sử dụng công cụ hỗ trợ và nguồn mã.
+
+---

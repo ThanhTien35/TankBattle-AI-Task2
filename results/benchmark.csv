@@ -1,0 +1,13 @@
+﻿scenario,category,purpose,algorithm,depth,repeats,avg_time_ms,avg_nodes,avg_leaves,avg_prunes,chosen_action,consistent_action,root_score
+Classic Battlefield,map,Independent 15x15 battlefield,Minimax,3,3,5.165,259,216,0,MOVE_RIGHT,True,0.0
+Classic Battlefield,map,Independent 15x15 battlefield,Alpha-Beta,3,3,2.538,59,41,10,MOVE_RIGHT,True,0.0
+Classic Battlefield,map,Independent 15x15 battlefield,Heuristic Minimax,3,3,36.095,259,216,0,MOVE_DOWN,True,13.200000000000017
+Classic Battlefield,map,Independent 15x15 battlefield,Heuristic Alpha-Beta,3,3,24.505,155,112,24,MOVE_DOWN,True,13.200000000000017
+Open Arena,map,Independent 15x15 battlefield,Minimax,3,3,5.217,259,216,0,MOVE_RIGHT,True,0.0
+Open Arena,map,Independent 15x15 battlefield,Alpha-Beta,3,3,1.758,59,41,10,MOVE_RIGHT,True,0.0
+Open Arena,map,Independent 15x15 battlefield,Heuristic Minimax,3,3,20.728,259,216,0,MOVE_DOWN,True,19.200000000000003
+Open Arena,map,Independent 15x15 battlefield,Heuristic Alpha-Beta,3,3,6.373,146,103,29,MOVE_DOWN,True,19.200000000000003
+Tactical Maze,map,Independent 15x15 battlefield,Minimax,3,3,3.98,259,216,0,MOVE_DOWN,True,0.0
+Tactical Maze,map,Independent 15x15 battlefield,Alpha-Beta,3,3,1.403,59,41,10,MOVE_DOWN,True,0.0
+Tactical Maze,map,Independent 15x15 battlefield,Heuristic Minimax,3,3,19.413,259,216,0,MOVE_DOWN,True,13.199999999999989
+Tactical Maze,map,Independent 15x15 battlefield,Heuristic Alpha-Beta,3,3,10.049,145,102,24,MOVE_DOWN,True,13.199999999999989
