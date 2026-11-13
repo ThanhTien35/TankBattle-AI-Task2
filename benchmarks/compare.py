@@ -30,7 +30,7 @@ def run_benchmark(depth=3, repeats=3, output='results/benchmark.csv',
                 samples = []
                 for _ in range(repeats):
                     agent = SearchAgent(mode, d, gameplay_tactics=not strict_search)
-                    action = agent.choose_action(scenario.state)
+                    action = agent.choose_joint_action(scenario.state, 0)
                     samples.append((agent.stats, action.value))
                 actions = {action for _, action in samples}
                 row = {

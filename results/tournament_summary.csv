@@ -1,5 +1,5 @@
 ﻿algorithm,games,wins,losses,draws,unfinished,completed_win_rate_pct,decisions,avg_time_ms_per_decision,avg_nodes_per_decision,avg_prunes_per_decision
-Minimax,36,14,22,0,0,38.89,636,1.789,41.53,0.0
-Alpha-Beta,36,14,22,0,0,38.89,636,1.504,17.94,4.72
-Heuristic Minimax,36,22,14,0,0,61.11,648,4.495,42.0,0.0
-Heuristic Alpha-Beta,36,22,14,0,0,61.11,648,4.616,42.0,0.0
+Minimax,36,6,14,16,0,16.67,684,2.349,37.0,0.0
+Alpha-Beta,36,6,14,16,0,16.67,684,1.516,12.22,4.99
+Heuristic Minimax,36,14,6,16,0,38.89,676,4.78,37.0,0.0
+Heuristic Alpha-Beta,36,14,6,16,0,38.89,676,4.534,37.0,0.0

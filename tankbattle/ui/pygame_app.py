@@ -8,9 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 import csv
 from datetime import datetime
+from dataclasses import replace
 import pygame
 from tankbattle.engine.model import Action, GameState, initial_state, WIDTH, HEIGHT
-from tankbattle.engine.game import apply_action
+from tankbattle.engine.game import apply_joint_actions
 from tankbattle.engine.maps import MAP_NAMES, get_map, spawn_state
 from tankbattle.agents.search import SearchAgent, SearchStats
 from tankbattle.agents.registry import ExternalAgent
@@ -44,7 +45,7 @@ class UIButton:
 
 
 class BattleApp:
-    def __init__(self, depth=3, p0='Heuristic Alpha-Beta', p1='Heuristic Minimax',
+    def __init__(self, depth=2, p0='Heuristic Alpha-Beta', p1='Heuristic Minimax',
                  external_module='tankbattle.external_agents.example_agent',
                  starting_state=None, scenario_name='Opening', gameplay_tactics=True,
                  spawn_mode='balanced', spawn_seed=2026):
@@ -78,6 +79,7 @@ class BattleApp:
         self.interval = 600
         self.last_tick = pygame.time.get_ticks()
         self.last_actions = ['-', '-']
+        self.pending_actions = [None, None]
         self.stats: list[SearchStats | None] = [None, None]
         self.notice = f'{self.scenario_name} | SPACE to play, N to step'
         self.flash = None
@@ -149,11 +151,13 @@ class BattleApp:
 
     def _reset(self):
         self.state = self.starting_state
+        self._refresh_agents()
         self.history = [self.state]
         self.records = []
         self.replay_index = 0
         self.replay_mode = False
         self.last_actions = ['-', '-']
+        self.pending_actions = [None, None]
         self.stats = [None, None]
         self.flash = None
         self.paused = True
@@ -187,15 +191,15 @@ class BattleApp:
         stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
         target = folder / f'battle_{stamp}.csv'
         with target.open('w', newline='', encoding='utf-8-sig') as f:
-            writer = csv.DictWriter(f, fieldnames=('map', 'ply', 'player', 'action',
+            writer = csv.DictWriter(f, fieldnames=('map', 'ply', 'p1_action', 'p2_action',
                                                      'events', 'p1_tank_hp', 'p2_tank_hp',
                                                      'p1_base_hp', 'p2_base_hp', 'winner'))
             writer.writeheader()
             for rec, state in zip(self.records, self.history[1:]):
                 writer.writerow({
                     'map': self.scenario_name,
-                    'ply': state.ply, 'player': rec['player'] + 1,
-                    'action': rec['action'].value,
+                    'ply': state.ply, 'p1_action': rec['actions'][0].value,
+                    'p2_action': rec['actions'][1].value,
                     'events': ' | '.join(rec['events']),
                     'p1_tank_hp': state.tanks[0].hp, 'p2_tank_hp': state.tanks[1].hp,
                     'p1_base_hp': state.bases[0].hp, 'p2_base_hp': state.bases[1].hp,
@@ -216,37 +220,46 @@ class BattleApp:
             return
         self._reset()
 
-    def _step(self, human_action: Action | None = None):
+    def _step(self, human_action: Action | None = None, human_player: int | None = None):
         if self.replay_mode:
             self.replay_index = min(self.replay_index + 1, len(self.history) - 1)
             return
         if self.state.terminal:
             self.paused = True
             return
-        player = self.state.turn
-        if self.agents[player] is None:
-            if human_action is None:
-                self.notice = f'P{player + 1} HUMAN: WASD move, F fire, X stay'
-                return
-            action = human_action
-        else:
-            try:
-                action = self.agents[player].choose_action(self.state)
-            except (ValueError, TypeError, ImportError) as exc:
-                self.paused = True
-                self.notice = f'Agent error: {str(exc)[:43]}'
-                return
-            self.stats[player] = getattr(self.agents[player], 'stats', None)
-        if action == Action.FIRE:
-            tank = self.state.tanks[player]
-            self.flash = (tank.x, tank.y, pygame.time.get_ticks() + 180)
-        # Ghi lai state va su kien de xem replay
+        # Ca 2 agent ra quyet dinh tu cung mot GameState.
+        actions = [None, None]
+        for p in (0, 1):
+            if self.agents[p] is None:
+                if human_player == p and human_action is not None:
+                    self.pending_actions[p] = human_action
+                actions[p] = self.pending_actions[p]
+            else:
+                try:
+                    if isinstance(self.agents[p], SearchAgent):
+                        actions[p] = self.agents[p].choose_joint_action(self.state, p)
+                    else:
+                        actions[p] = self.agents[p].choose_action(replace(self.state, turn=p))
+                except (ValueError, TypeError, ImportError) as exc:
+                    self.paused = True
+                    self.notice = f'Agent error: {str(exc)[:43]}'
+                    return
+                self.stats[p] = getattr(self.agents[p], 'stats', None)
+        if any(action is None for action in actions):
+            self.notice = 'HUMAN: WASD move, F fire, X stay (both select before update)'
+            return
+        self.pending_actions = [None, None]
+        self.flash = None
+        for p, action in enumerate(actions):
+            if action == Action.FIRE:
+                tank = self.state.tanks[p]
+                self.flash = (tank.x, tank.y, pygame.time.get_ticks() + 180)
         events = []
-        self.state = apply_action(self.state, action, events=events)
+        self.state = apply_joint_actions(self.state, *actions, events=events)
         self.history.append(self.state)
-        self.records.append({'player': player, 'action': action, 'events': events})
-        self.last_actions[player] = action.value.replace('MOVE_', '')
-        self.notice = f'P{player + 1}  >  {action.value}'
+        self.records.append({'actions': tuple(actions), 'events': events})
+        self.last_actions = [action.value.replace('MOVE_', '') for action in actions]
+        self.notice = f'CYCLE {self.state.ply}: P1 {actions[0].value} | P2 {actions[1].value}'
         self.last_tick = pygame.time.get_ticks()
         if self.state.terminal:
             self.paused = True
@@ -332,8 +345,13 @@ class BattleApp:
                         pygame.K_f: Action.FIRE, pygame.K_RETURN: Action.FIRE,
                         pygame.K_x: Action.STAY,
                     }.get(event.key)
-                    if human and not self.replay_mode and not self.state.terminal and self.modes[self.state.turn] == 'Human':
-                        self._step(human)
+                    if human and not self.replay_mode and not self.state.terminal:
+                        humans = [p for p in (0, 1) if self.modes[p] == 'Human']
+                        if len(humans) == 1:
+                            self._step(human, humans[0])
+                        elif len(humans) == 2:
+                            pending = next((p for p in humans if self.pending_actions[p] is None), humans[0])
+                            self._step(human, pending)
         return True
 
     def _draw_board(self):
@@ -377,7 +395,7 @@ class BattleApp:
                 direction = 'up'
             px, py = BOARD_X + tank.x * TILE, BOARD_Y + tank.y * TILE
             self.screen.blit(self.art[f'tank_{"blue" if i == 0 else "gold"}_{direction}'], (px, py))
-            if state.turn == i and not state.terminal:
+            if not state.terminal:
                 # Danh dau player dang toi luot
                 c = CYAN if i == 0 else GOLD
                 pygame.draw.line(self.screen, c, (px + 1, py + 1), (px + 9, py + 1), 2)
@@ -438,7 +456,7 @@ class BattleApp:
             selected = (i + 1) == self.replay_index
             if selected:
                 self._box(pygame.Rect(x - 5, y - 3, 474, 28), PANEL_LIGHT, None, 3)
-            self._text(f'{i+1:03d} P{rec["player"]+1} {rec["action"].value}',
+            self._text(f'{i+1:03d} P1 {rec["actions"][0].value} / P2 {rec["actions"][1].value}',
                        x, y, 14, GOLD if selected else TEXT)
             event = next((e for e in reversed(rec['events']) if 'hit ' in e or 'GAME OVER' in e), '')
             if event:
@@ -455,7 +473,7 @@ class BattleApp:
         self._box(pygame.Rect(SIDE_X, SIDE_Y, SIDE_W, SIDE_H))
         x = SIDE_X + 21
         self._text('MATCH CONTROL', x, 145, 19, ORANGE, True)
-        self._text('TURN-BASED / 2 PLAYERS / 3 MAPS / ' +
+        self._text('SIMULTANEOUS / 2 PLAYERS / 3 MAPS / ' +
                    ('TACTICAL AI' if self.gameplay_tactics else 'STRICT AI'),
                    x, 174, 15, MUTED)
         self._draw_button(self.buttons[0])
@@ -463,7 +481,7 @@ class BattleApp:
         self._text('>', x + 447, 215, 18, ORANGE, True)
         status = 'FINISHED' if self.state.terminal else ('PAUSED' if self.paused else 'RUNNING')
         self._text(f'STATUS  {status}', x, 254, 18, GREEN if status == 'RUNNING' else GOLD, True)
-        self._text(f'PLY {self.state.ply:03d}', x + 370, 254, 18, TEXT, True)
+        self._text(f'CYCLE {self.state.ply:03d}', x + 370, 254, 18, TEXT, True)
         self._hp_bar(x, 287, self.state.tanks[0].hp, 6, CYAN, 'P1 TANK')
         self._hp_bar(x, 337, self.state.tanks[1].hp, 6, GOLD, 'P2 TANK')
         for i, y in enumerate((389, 451)):
@@ -479,7 +497,7 @@ class BattleApp:
                        x + 6, y + 43, 13, MUTED)
         for button in self.buttons[3:9]:
             self._draw_button(button, button.key == 'pause' and not self.paused)
-        self._text(f'SPEED: {self.interval} ms / turn', x, 603, 15, MUTED)
+        self._text(f'SPEED: {self.interval} ms / cycle', x, 603, 15, MUTED)
         self._text(f'SEARCH DEPTH: {self.depth}', x + 280, 603, 15, MUTED)
         pygame.draw.line(self.screen, BORDER, (x, 629), (x + 474, 629))
         self._text('LAST SEARCH', x, 635, 16, ORANGE, True)

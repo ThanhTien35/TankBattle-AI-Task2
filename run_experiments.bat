@@ -8,11 +8,11 @@ if not exist ".venv\Scripts\python.exe" (
 set "PY=.venv\Scripts\python.exe"
 %PY% -m unittest discover -s tests -v
 if errorlevel 1 goto fail
-%PY% -m benchmarks.compare --suite maps --depths 2 3 4 --repeats 5 --output results/maps_depths234.csv
+%PY% benchmark.py --all
 if errorlevel 1 goto fail
-%PY% -m benchmarks.compare --suite tactical --depth 3 --repeats 5 --output results/tactical_depth3.csv
+%PY% benchmark.py --tactical
 if errorlevel 1 goto fail
-%PY% -m benchmarks.tournament --suite maps --depth 2 --rounds 2 --max-plies 60 --output results/tournament.csv --summary-output results/tournament_summary.csv
+%PY% benchmark.py --tournament
 if errorlevel 1 goto fail
 echo.
 echo ALL TESTS AND EXPERIMENTS COMPLETED.

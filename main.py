@@ -2,7 +2,7 @@
 import argparse
 from tankbattle.engine.model import initial_state
 from tankbattle.engine.maps import MAP_NAMES, get_map, spawn_state
-from tankbattle.engine.game import apply_action
+from tankbattle.engine.game import apply_joint_actions
 from tankbattle.agents.search import SearchAgent
 from tankbattle.agents.registry import ExternalAgent
 from benchmarks.scenarios import get_scenarios, tournament_scenarios
@@ -26,10 +26,12 @@ def headless_match(p0, p1, depth, module, max_steps=60, start_state=None,
               make_agent(p1, depth, modules[1], gameplay_tactics)]
     state = start_state if start_state is not None else initial_state()
     for _ in range(max_steps):
-        player = state.turn
-        action = agents[player].choose_action(state)
-        state = apply_action(state, action)
-        print(f'Ply {state.ply:03d} | P{player + 1} {action.value:<10} | HP {state.tanks[0].hp}-{state.tanks[1].hp} | Base {state.bases[0].hp}-{state.bases[1].hp}')
+        # Ca 2 agent doc cung state, roi moi cap nhat cycle.
+        actions = [agents[p].choose_joint_action(state, p) if isinstance(agents[p], SearchAgent)
+                   else agents[p].choose_action(__import__('dataclasses').replace(state, turn=p))
+                   for p in (0, 1)]
+        state = apply_joint_actions(state, *actions)
+        print(f'Cycle {state.ply:03d} | P1 {actions[0].value:<10} | P2 {actions[1].value:<10} | HP {state.tanks[0].hp}-{state.tanks[1].hp} | Base {state.bases[0].hp}-{state.bases[1].hp}')
         if state.terminal:
             break
     print(f'RESULT: winner={state.winner}, reason={state.reason or "step limit reached"}')
@@ -38,7 +40,7 @@ def headless_match(p0, p1, depth, module, max_steps=60, start_state=None,
 
 def main():
     parser = argparse.ArgumentParser(description='Task 2 - Tank Battle / Adversarial Search')
-    parser.add_argument('--depth', type=int, default=3)
+    parser.add_argument('--depth', type=int, default=2)
     parser.add_argument('--strict-search', action='store_true',
                         help='Disable gameplay tie-breaks for pure search experiments')
     parser.add_argument('--p0', default='Heuristic Alpha-Beta')

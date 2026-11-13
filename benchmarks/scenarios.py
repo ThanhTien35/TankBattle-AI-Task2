@@ -1,7 +1,7 @@
 """Reproducible benchmark scenarios. Tactical layouts are controlled test fixtures.
 
 They are NOT additional rules from the assignment. Each fixture uses the same
-GameState and apply_action() as the interactive game and AI.
+GameState and apply_joint_actions() as the interactive game and AI.
 """
 from __future__ import annotations
 from dataclasses import dataclass, replace
@@ -57,7 +57,7 @@ def tactical_scenarios() -> list[Scenario]:
                 walls=(Wall(7, 4), Wall(7, 6), Wall(8, 5)),
             ),
             'tactical',
-            'MOVE_RIGHT sets up a forced win in three plies',
+            'MOVE_RIGHT sets up a forced win in three cycles',
         ),
         Scenario(
             'Finishing shot',

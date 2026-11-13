@@ -1,19 +1,17 @@
 """Mirrored, deterministic AI-vs-AI tournament (no PyGame required).
 
 Every pair of algorithms plays each selected starting position in both seat
-assignments. Rounds 1 and 2 use opposite first movers, identically for both
-seat assignments. Early max-plies cutoffs are recorded as UNFINISHED, NOT draws.
+assignments. Both players choose actions concurrently; rounds repeat identical setup for reproducibility. Early max-cycles cutoffs are recorded as UNFINISHED, NOT draws.
 """
 from __future__ import annotations
 import argparse
 import csv
 from collections import defaultdict
-from dataclasses import replace
 from itertools import combinations
 from pathlib import Path
 from tankbattle.agents.search import MODES, SearchAgent
 from benchmarks.scenarios import Scenario, tournament_scenarios, map_scenarios, get_scenarios
-from tankbattle.engine.game import apply_action
+from tankbattle.engine.game import apply_joint_actions
 from tankbattle.engine.model import Action, GameState
 
 
@@ -27,19 +25,20 @@ def play_match(start: GameState, modes: tuple[str, str], depth: int,
     for _ in range(max_plies):
         if state.terminal:
             break
-        p = state.turn
-        action = agents[p].choose_action(state)
-        s = agents[p].stats
-        rec = stats[p]
-        rec['decisions'] += 1
-        rec['time_ms'] += s.elapsed_ms
-        rec['nodes'] += s.nodes
-        rec['prunes'] += s.prunes
-        rec['fires'] += action == Action.FIRE
-        rec['stays'] += action == Action.STAY
-        rec['moves'] += action in (Action.MOVE_UP, Action.MOVE_DOWN,
-                                  Action.MOVE_LEFT, Action.MOVE_RIGHT)
-        state = apply_action(state, action)
+        # 1 cycle = 2 action tu cung trang thai.
+        actions = [agents[p].choose_joint_action(state, p) for p in (0, 1)]
+        for p, action in enumerate(actions):
+            ss = agents[p].stats
+            rec = stats[p]
+            rec['decisions'] += 1
+            rec['time_ms'] += ss.elapsed_ms
+            rec['nodes'] += ss.nodes
+            rec['prunes'] += ss.prunes
+            rec['fires'] += action == Action.FIRE
+            rec['stays'] += action == Action.STAY
+            rec['moves'] += action in (Action.MOVE_UP, Action.MOVE_DOWN,
+                                      Action.MOVE_LEFT, Action.MOVE_RIGHT)
+        state = apply_joint_actions(state, *actions)
     if state.terminal:
         status = 'draw' if state.winner == -1 else 'win'
         winner_mode = '' if state.winner == -1 else modes[state.winner]
@@ -47,13 +46,13 @@ def play_match(start: GameState, modes: tuple[str, str], depth: int,
     else:
         status = 'unfinished'
         winner_mode = ''
-        reason = f'Benchmark cutoff at {max_plies} plies (NOT a draw)'
+        reason = f'Benchmark cutoff at {max_plies} cycles (NOT a draw)'
     return {
         'p0_algorithm': modes[0], 'p1_algorithm': modes[1],
         'depth': depth, 'max_plies': max_plies,
         'result': status, 'winner_player': state.winner if status == 'win' else '',
         'winner_algorithm': winner_mode,
-        'plies_played': state.ply - start.ply,
+        'cycles_played': state.ply - start.ply,
         'reason': reason,
         'p0_tank_hp': state.tanks[0].hp, 'p1_tank_hp': state.tanks[1].hp,
         'p0_base_hp': state.bases[0].hp, 'p1_base_hp': state.bases[1].hp,
@@ -119,9 +118,9 @@ def run_tournament(depth: int = 2, max_plies: int = 60, rounds: int = 2,
     if not 1 <= depth <= 6:
         raise ValueError('depth must be 1..6')
     if max_plies < 1:
-        raise ValueError('max-plies must be >= 1')
+        raise ValueError('max-cycles must be >= 1')
     if rounds not in (1, 2):
-        raise ValueError('rounds must be 1 or 2 (alternate starting player)')
+        raise ValueError('rounds must be 1 or 2')
     selected_modes = list(modes) if modes is not None else list(MODES)
     if len(selected_modes) < 2 or len(set(selected_modes)) != len(selected_modes):
         raise ValueError('Provide at least two distinct algorithms')
@@ -137,18 +136,18 @@ def run_tournament(depth: int = 2, max_plies: int = 60, rounds: int = 2,
     for a, b in combinations(selected_modes, 2):
         for scenario in selected_scenarios:
             for round_index in range(rounds):
-                # Dao vi tri agent tren cung state ban dau
-                state = replace(scenario.state, turn=round_index % 2)
+                # Hoan doi phe P1/P2; moi round co cung opening de tai lap
+                state = scenario.state
                 for p0, p1 in ((a, b), (b, a)):
                     row = play_match(state, (p0, p1), depth, max_plies, strict_search=strict_search)
                     row = {'scenario': scenario.name, 'round': round_index + 1,
-                           'starting_player': state.turn, **row}
+                           'spawn_seed': '', **row}
                     rows.append(row)
                     print(f"{scenario.name:12s} r{round_index+1} | "
                           f"{p0:22s} vs {p1:22s} | "
                           f"{row['result']:10s} | "
                           f"winner={row['winner_algorithm'] or '-':22s} | "
-                          f"{row['plies_played']:3d} plies")
+                          f"{row['cycles_played']:3d} cycles")
     summary = summarize(rows, selected_modes)
     _write_csv(output, rows)
     _write_csv(summary_output, summary)
@@ -165,7 +164,7 @@ def run_tournament(depth: int = 2, max_plies: int = 60, rounds: int = 2,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--depth', type=int, default=2)
-    parser.add_argument('--max-plies', type=int, default=60)
+    parser.add_argument('--max-cycles', type=int, default=60)
     parser.add_argument('--strict-search', action='store_true',
                         help='Disable gameplay tie-breaks and root progress bonus')
     parser.add_argument('--rounds', type=int, choices=(1, 2), default=2)

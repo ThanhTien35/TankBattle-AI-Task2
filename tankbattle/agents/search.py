@@ -1,4 +1,9 @@
-"""Four comparable adversarial search modes with tactical, non-stalling play."""
+"""Four simultaneous-game search modes using pure maximin of action pairs.
+
+Depth counts FULL cycles. Alpha-Beta prunes maximin branches; Heuristic
+variants evaluate nonterminal states. A root-level gameplay preference may
+be enabled for more active demos; --strict-search removes it.
+"""
 from __future__ import annotations
 
 from collections import deque
@@ -6,7 +11,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from time import perf_counter
 
-from tankbattle.engine.game import apply_action, legal_actions
+from tankbattle.engine.game import apply_joint_actions, legal_actions
 from tankbattle.engine.model import Action, GameState, HEIGHT, WIDTH
 
 MODES = ('Minimax', 'Alpha-Beta', 'Heuristic Minimax', 'Heuristic Alpha-Beta')
@@ -186,11 +191,16 @@ def evaluate(state: GameState, root_player: int, heuristic: bool) -> float:
     return score if root_player == 0 else -score
 
 
-# THUAT TOAN 1: MINIMAX - tim max/min tren cay trang thai.
+# THUAT TOAN 1: MINIMAX (MAXIMIN) - max action cua ta, min action doi thu.
 # THUAT TOAN 2: ALPHA-BETA - cat nhanh voi hai can alpha, beta.
 # THUAT TOAN 3: HEURISTIC MINIMAX - Minimax va ham danh gia.
 # THUAT TOAN 4: HEURISTIC ALPHA-BETA - ket hop cat nhanh va heuristic.
 # Ca bon dung chung lop; tuy chon use_pruning va use_heuristic.
+def replace_root_turn(state: GameState, player: int) -> GameState:
+    from dataclasses import replace
+    return replace(state, turn=player)
+
+
 class SearchAgent:
     def __init__(self, mode: str = 'Heuristic Alpha-Beta', depth: int = 3,
                  gameplay_tactics: bool = True):
@@ -232,67 +242,79 @@ class SearchAgent:
             rank -= 16.0 * self._recent_poses.count(new_pos)
         return rank
 
-    # ROOT SEARCH: chon action tot nhat cho nguoi choi hien tai.
-    def choose_action(self, state: GameState) -> Action:
+    # SIMULTANEOUS MAXIMIN: moi agent tu chon action tu cung state.
+    # Minimax/Alpha-Beta duoc ap dung tren ma tran cap action 6x6.
+    # Day la pure-strategy worst-case maximin, KHONG phai mixed Nash.
+    def choose_joint_action(self, state: GameState, player: int) -> Action:
         if state.terminal:
             return Action.STAY
         if state.ply <= self._last_ply:
             self._recent_poses.clear()
         start = perf_counter()
         self.stats = SearchStats(algorithm=self.mode, depth=self.depth, nodes=1)
-        root = state.turn
-        candidates = []
-        for action in legal_actions(state):
-            next_state = apply_action(state, action)
-            rank = self._root_rank(state, action, next_state) if self.gameplay_tactics else 0.0
-            candidates.append((rank, action, next_state))
-        # Gameplay sap xep nuoc di, strict giu thu tu FIRE dau tien
+        actions = legal_actions(state)
+        alpha = float('-inf')
+        best_action, best_score, best_selection = Action.STAY, float('-inf'), float('-inf')
+        ranked = []
+        for action in actions:
+            joint = (action, Action.STAY) if player == 0 else (Action.STAY, action)
+            next_state = apply_joint_actions(state, *joint)
+            tactical = replace_root_turn(state, player)
+            rank = self._root_rank(tactical, action, replace_root_turn(next_state, player)) if self.gameplay_tactics else 0.0
+            ranked.append((rank, action))
         if self.gameplay_tactics:
-            candidates.sort(key=lambda item: item[0], reverse=True)
-        best_action = Action.STAY
-        best_score = float('-inf')
-        best_selection = float('-inf')
-        alpha, beta = float('-inf'), float('inf')
-        for rank, action, next_state in candidates:
-            # Root bonus can change ranking; search each root move with exact bounds
-            low, high = (float('-inf'), float('inf')) if self.use_heuristic else (alpha, beta)
-            score = self._search(next_state, self.depth - 1, root, low, high)
-            # Heuristic gameplay: them diem tien trien de tranh dung yen/lap lai
-            selection = (score + 0.65 * max(-250.0, min(250.0, rank))
-                         if self.gameplay_tactics and self.use_heuristic else score)
+            ranked.sort(key=lambda x: x[0], reverse=True)
+
+        for rank, action in ranked:
+            worst = float('inf')
+            for response in actions:
+                a0, a1 = ((action, response) if player == 0 else (response, action))
+                child = apply_joint_actions(state, a0, a1)
+                score = self._joint_search(child, self.depth - 1, player,
+                                           alpha if self.use_pruning else float('-inf'),
+                                           worst if self.use_pruning else float('inf'))
+                worst = min(worst, score)
+                if self.use_pruning and worst <= alpha:
+                    self.stats.prunes += 1
+                    break
+            selection = (worst + 0.65 * max(-250., min(250., rank))
+                         if self.gameplay_tactics and self.use_heuristic else worst)
             if selection > best_selection:
-                best_score, best_selection, best_action = score, selection, action
-            if self.use_pruning:
-                alpha = max(alpha, score)
+                best_action, best_score, best_selection = action, worst, selection
+            if self.use_pruning and not (self.gameplay_tactics and self.use_heuristic):
+                alpha = max(alpha, worst)
         self.stats.elapsed_ms = (perf_counter() - start) * 1000
         self.stats.score = best_score
         self.stats.selection_score = best_selection
         self.stats.action = best_action.value
-        tank = state.tanks[root]
+        tank = state.tanks[player]
         if self.gameplay_tactics:
             self._recent_poses.append((tank.x, tank.y, tank.dx, tank.dy))
         self._last_ply = state.ply
         return best_action
 
-    # DE QUY MINIMAX / ALPHA-BETA: MAX la ta, MIN la doi thu.
-    def _search(self, state: GameState, depth: int, root: int, alpha: float, beta: float) -> float:
+    def _joint_search(self, state: GameState, depth: int, player: int,
+                      alpha: float, beta: float) -> float:
         self.stats.nodes += 1
-        if state.terminal or depth == 0:
+        if depth == 0 or state.terminal:
             self.stats.leaves += 1
-            return evaluate(state, root, self.use_heuristic)
-        maximizing = state.turn == root
-        best = float('-inf') if maximizing else float('inf')
+            return evaluate(state, player, self.use_heuristic)
+        best = float('-inf')
         for action in legal_actions(state):
-            score = self._search(apply_action(state, action), depth - 1, root, alpha, beta)
-            if maximizing:
-                best = max(best, score)
-                if self.use_pruning:
-                    alpha = max(alpha, best)
-            else:
-                best = min(best, score)
-                if self.use_pruning:
-                    beta = min(beta, best)
-            if self.use_pruning and alpha >= beta:
-                self.stats.prunes += 1
-                break
+            worst = float('inf')
+            for response in legal_actions(state):
+                a0, a1 = ((action, response) if player == 0 else (response, action))
+                child = apply_joint_actions(state, a0, a1)
+                value = self._joint_search(child, depth - 1, player, alpha, min(beta, worst))
+                worst = min(worst, value)
+                if self.use_pruning and worst <= alpha:
+                    self.stats.prunes += 1
+                    break
+            best = max(best, worst)
+            if self.use_pruning:
+                alpha = max(alpha, best)
+                if alpha >= beta:
+                    self.stats.prunes += 1
+                    break
         return best
+

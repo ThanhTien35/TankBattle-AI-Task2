@@ -1,0 +1,17 @@
+﻿scenario,category,purpose,algorithm,depth,repeats,avg_time_ms,avg_nodes,avg_leaves,avg_prunes,chosen_action,consistent_action,root_score
+Incoming bullet,tactical,Tank 0 has 1 HP; staying or firing loses immediately; dodge required,Minimax,2,3,9.72,469,456,0,MOVE_DOWN,True,0.0
+Incoming bullet,tactical,Tank 0 has 1 HP; staying or firing loses immediately; dodge required,Alpha-Beta,2,3,1.762,59,51,21,MOVE_DOWN,True,0.0
+Incoming bullet,tactical,Tank 0 has 1 HP; staying or firing loses immediately; dodge required,Heuristic Minimax,2,3,24.547,469,456,0,MOVE_DOWN,True,-561.4000000000001
+Incoming bullet,tactical,Tank 0 has 1 HP; staying or firing loses immediately; dodge required,Heuristic Alpha-Beta,2,3,10.169,202,189,26,MOVE_DOWN,True,-561.4000000000001
+Forced flank,tactical,MOVE_RIGHT sets up a forced win in three cycles,Minimax,2,3,21.407,1333,1296,0,MOVE_RIGHT,True,99998.0
+Forced flank,tactical,MOVE_RIGHT sets up a forced win in three cycles,Alpha-Beta,2,3,1.655,83,71,45,MOVE_RIGHT,True,99998.0
+Forced flank,tactical,MOVE_RIGHT sets up a forced win in three cycles,Heuristic Minimax,2,3,54.581,1333,1296,0,MOVE_RIGHT,True,99998.0
+Forced flank,tactical,MOVE_RIGHT sets up a forced win in three cycles,Heuristic Alpha-Beta,2,3,30.995,653,616,71,MOVE_RIGHT,True,99998.0
+Finishing shot,tactical,FIRE wins immediately,Minimax,2,3,19.371,1189,1156,0,FIRE,True,0.0
+Finishing shot,tactical,FIRE wins immediately,Alpha-Beta,2,3,1.598,61,53,41,FIRE,True,0.0
+Finishing shot,tactical,FIRE wins immediately,Heuristic Minimax,2,3,50.35,1189,1156,0,FIRE,True,539.4
+Finishing shot,tactical,FIRE wins immediately,Heuristic Alpha-Beta,2,3,20.539,474,441,67,FIRE,True,539.4
+Brick barrier,tactical,A wall blocks the direct shot; compare heuristic movement and ties,Minimax,2,3,28.268,1333,1296,0,FIRE,True,0.0
+Brick barrier,tactical,A wall blocks the direct shot; compare heuristic movement and ties,Alpha-Beta,2,3,4.233,83,71,45,FIRE,True,0.0
+Brick barrier,tactical,A wall blocks the direct shot; compare heuristic movement and ties,Heuristic Minimax,2,3,61.663,1333,1296,0,MOVE_DOWN,True,457.6
+Brick barrier,tactical,A wall blocks the direct shot; compare heuristic movement and ties,Heuristic Alpha-Beta,2,3,21.328,502,465,74,MOVE_DOWN,True,457.6

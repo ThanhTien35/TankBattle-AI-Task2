@@ -1,9 +1,8 @@
-"""Deterministic turn-based rules, used identically by UI and AI simulation.
+"""Simultaneous Tank Battle rules shared by AI, GUI, and benchmarks.
 
-Design decision (not specified by assignment): one action constitutes one game
-cycle. Players alternate; after every action, all active bullets advance up to
-three cells, checking collisions after EACH cell. A blocked move still spends a
-turn and changes the tank's facing. There is a 160-ply draw safeguard.
+One game cycle: both choose actions independently from the same state, both
+movements are resolved, both shots spawn, then bullets advance at most three
+cells. The HP rules remain unchanged. A 160-cycle draw is a demo safeguard.
 """
 from __future__ import annotations
 from dataclasses import replace
@@ -39,79 +38,97 @@ def _check_winner(tanks, bases) -> tuple[int | None, str]:
     return None, ''
 
 
-def apply_action(state: GameState, action: Action | str,
-                 events: list[str] | None = None) -> GameState:
-    # events chi duoc ghi khi UI yeu cau, AI van dung cung logic
-    def emit(message: str) -> None:
-        if events is not None:
-            events.append(message)
+def apply_joint_actions(state: GameState, action0: Action | str, action1: Action | str,
+                        events: list[str] | None = None) -> GameState:
+    """Simultaneous cycle: both actions use the SAME original state.
 
+    Movement is resolved together, then shots are spawned and all bullets
+    advance 3 cells in 3 simultaneous substeps. Damage in the same substep
+    is applied together so neither player gets an artificial first-shot edge.
+    """
     if state.terminal:
         return state
-    action = Action(action)
-    tanks, bases, walls, bullets = list(state.tanks), list(state.bases), list(state.walls), list(state.bullets)
-    player = state.turn
-    tank = tanks[player]
-    if action in DIRECTIONS:
-        dx, dy = DIRECTIONS[action]
-        nx, ny = tank.x + dx, tank.y + dy
-        if in_bounds(nx, ny) and not occupied(state, nx, ny):
-            tank = replace(tank, x=nx, y=ny)
-            emit(f'P{player + 1} moved to ({nx},{ny})')
-        else:
-            emit(f'P{player + 1} move blocked')
-        tanks[player] = replace(tank, dx=dx, dy=dy)
-    elif action == Action.FIRE:
-        bullets.append(Bullet(tank.x, tank.y, tank.dx, tank.dy, player))
-        emit(f'P{player + 1} fired')
+    actions = (Action(action0), Action(action1))
+    tanks = list(state.tanks)
+    bases = list(state.bases)
+    walls = list(state.walls)
+    bullets = list(state.bullets)
 
-    # Dan di tung o, kiem tra va cham ngay sau moi o
-    moving = []
-    for bullet in bullets:
-        x, y = bullet.x, bullet.y
-        active = True
-        for _ in range(3):
-            x += bullet.dx
-            y += bullet.dy
+    def emit(msg):
+        if events is not None:
+            events.append(msg)
+
+    # THUAT TOAN: XU LY DI CHUYEN DONG THOI
+    occupied_static = {(w.x, w.y) for w in walls if w.hp > 0}
+    occupied_static.update((b.x, b.y) for b in bases if b.hp > 0)
+    starts = [(t.x, t.y) for t in tanks]
+    dests = list(starts)
+    for p, action in enumerate(actions):
+        if action in DIRECTIONS:
+            dx, dy = DIRECTIONS[action]
+            tanks[p] = replace(tanks[p], dx=dx, dy=dy)
+            dest = (starts[p][0] + dx, starts[p][1] + dy)
+            if in_bounds(*dest) and dest not in occupied_static:
+                dests[p] = dest
+    # Two tanks cannot occupy a cell, swap cells or move into a stationary tank.
+    if dests[0] == dests[1] or (dests[0] == starts[1] and dests[1] == starts[0]):
+        dests = starts.copy()
+    else:
+        for p in (0, 1):
+            if dests[p] == starts[1 - p] and dests[1 - p] == starts[1 - p]:
+                dests[p] = starts[p]
+    for p in (0, 1):
+        if actions[p] in DIRECTIONS:
+            if dests[p] == starts[p]:
+                emit(f'P{p + 1} move blocked')
+            else:
+                emit(f'P{p + 1} moved to {dests[p]}')
+        tanks[p] = replace(tanks[p], x=dests[p][0], y=dests[p][1])
+
+    # Both FIRE actions are registered before any bullet advances.
+    for p, action in enumerate(actions):
+        if action == Action.FIRE:
+            old_tank = state.tanks[p]
+            bullets.append(Bullet(old_tank.x, old_tank.y, old_tank.dx, old_tank.dy, p))
+            emit(f'P{p + 1} fired')
+
+    # THUAT TOAN: CAP NHAT DAN DONG THOI THEO TUNG O
+    for _ in range(3):
+        next_bullets = []
+        hits = {'wall': {}, 'tank': {}, 'base': {}}
+        wall_by_pos = {(w.x, w.y): i for i, w in enumerate(walls) if w.hp > 0}
+        tank_by_pos = {(t.x, t.y): i for i, t in enumerate(tanks) if t.hp > 0}
+        base_by_pos = {(b.x, b.y): i for i, b in enumerate(bases) if b.hp > 0}
+        for bullet in bullets:
+            x, y = bullet.x + bullet.dx, bullet.y + bullet.dy
             if not in_bounds(x, y):
-                active = False
-                break
-            hit = False
-            for j, wall in enumerate(walls):
-                if wall.hp > 0 and (wall.x, wall.y) == (x, y):
-                    walls[j] = replace(wall, hp=wall.hp - 1)
-                    emit(f'P{bullet.owner + 1} hit wall ({x},{y}): {wall.hp}->{wall.hp - 1}')
-                    hit = True
+                continue
+            pos = (x, y)
+            for kind, mapping in (('wall', wall_by_pos), ('tank', tank_by_pos), ('base', base_by_pos)):
+                if pos in mapping:
+                    idx = mapping[pos]
+                    hits[kind][idx] = hits[kind].get(idx, 0) + 1
+                    emit(f'P{bullet.owner + 1} hit {kind} {idx + 1}')
                     break
-            if not hit:
-                for j, target in enumerate(tanks):
-                    if target.hp > 0 and (target.x, target.y) == (x, y):
-                        tanks[j] = replace(target, hp=target.hp - 1)
-                        emit(f'P{bullet.owner + 1} hit P{j + 1} Tank: {target.hp}->{target.hp - 1}')
-                        hit = True
-                        break
-            if not hit:
-                for j, base in enumerate(bases):
-                    if base.hp > 0 and (base.x, base.y) == (x, y):
-                        bases[j] = replace(base, hp=base.hp - 1)
-                        emit(f'P{bullet.owner + 1} hit P{j + 1} Base: {base.hp}->{base.hp - 1}')
-                        hit = True
-                        break
-            if hit:
-                active = False
-                winner, reason = _check_winner(tanks, bases)
-                if winner is not None:
-                    emit(f'GAME OVER: {"Draw" if winner == -1 else f"P{winner + 1} wins"} ({reason})')
-                    return GameState(tuple(tanks), tuple(bases), tuple(w for w in walls if w.hp > 0),
-                                     tuple(moving), 1 - player, state.ply + 1, winner, reason)
-                break
-        if active:
-            moving.append(replace(bullet, x=x, y=y))
+            else:
+                next_bullets.append(replace(bullet, x=x, y=y))
+        # Hits in one substep are committed simultaneously.
+        for idx, damage in hits['wall'].items():
+            walls[idx] = replace(walls[idx], hp=max(0, walls[idx].hp - damage))
+        for idx, damage in hits['tank'].items():
+            tanks[idx] = replace(tanks[idx], hp=max(0, tanks[idx].hp - damage))
+        for idx, damage in hits['base'].items():
+            bases[idx] = replace(bases[idx], hp=max(0, bases[idx].hp - damage))
+        bullets = next_bullets
+        winner, reason = _check_winner(tanks, bases)
+        if winner is not None:
+            break
+
     winner, reason = _check_winner(tanks, bases)
-    next_ply = state.ply + 1
-    if winner is None and next_ply >= MAX_TURNS:
-        winner, reason = -1, f'{MAX_TURNS}-turn limit'
+    cycle = state.ply + 1
+    if winner is None and cycle >= MAX_TURNS:
+        winner, reason = -1, f'{MAX_TURNS}-cycle limit'
     if winner is not None:
         emit(f'GAME OVER: {"Draw" if winner == -1 else f"P{winner + 1} wins"} ({reason})')
     return GameState(tuple(tanks), tuple(bases), tuple(w for w in walls if w.hp > 0),
-                     tuple(moving), 1 - player, next_ply, winner, reason)
+                     tuple(bullets), 0, cycle, winner, reason)

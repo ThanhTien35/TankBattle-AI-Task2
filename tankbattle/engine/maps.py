@@ -24,14 +24,14 @@ def get_map(name: str) -> GameState:
     if name == 'Classic Battlefield':
         # Spawn lech hang, tranh hai tank ban thang vao nhau khi bat dau.
         classic = initial_state()
-        return replace(classic, tanks=(Tank(2, 3, 1, 0), Tank(12, 7, -1, 0)))
+        return replace(classic, tanks=(Tank(2, 6, 1, 0), Tank(12, 8, -1, 0)))
     if name == 'Open Arena':
         steel = {(6, 2), (8, 2), (6, 12), (8, 12)}
         brick = {(3, 3), (11, 3), (3, 11), (11, 11), (7, 4), (7, 10),
                  (5, 6), (9, 6), (5, 8), (9, 8)}
         return _make_state(
             steel | brick, steel,
-            (Tank(2, 4, 1, 0), Tank(12, 10, -1, 0)),
+            (Tank(3, 6, 1, 0), Tank(11, 8, -1, 0)),
             (Base(1, 7), Base(13, 7)),
         )
     if name == 'Tactical Maze':
@@ -46,7 +46,7 @@ def get_map(name: str) -> GameState:
         steel = {(4, 2), (10, 2), (4, 12), (10, 12), (7, 5), (7, 9)}
         return _make_state(
             brick, steel,
-            (Tank(2, 4, 1, 0), Tank(12, 10, -1, 0)),
+            (Tank(2, 5, 1, 0), Tank(12, 9, -1, 0)),
             (Base(1, 7), Base(13, 7)),
         )
     raise ValueError(f'Unknown map: {name}. Choose from {MAP_NAMES}')
